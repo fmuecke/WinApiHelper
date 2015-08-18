@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace WinAid
+namespace WinApiHelper
 {
 	namespace Environment
 	{

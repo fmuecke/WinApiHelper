@@ -1,14 +1,15 @@
-#include "WindowsVersion.hpp"
+#include "System.hpp"
 #include <iostream>
 
 using namespace std;
 
 int main()
 {
-	WinAid::WindowsVersion::Info sysInfo;
-	sysInfo.Init();
-	wcout << WinAid::WindowsVersion::GetLocaleName();
+	WinApiHelper::System::WindowsVersion winVer;
+	winVer.Init();
 
-	wcout << sysInfo.ToString();
+	wcout << winVer.ToString() << endl;
+	wcout << winVer.ToExtendedString() << endl;
+
 	return 0;
 }

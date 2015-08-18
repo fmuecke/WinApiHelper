@@ -5,7 +5,7 @@
 
 #pragma comment(lib, "Advapi32.lib")
 
-namespace WinAid
+namespace WinApiHelper
 {
 	class Registry
 	{
@@ -65,11 +65,11 @@ namespace WinAid
 
 			requiredSize += sizeof(wchar_t);  // additional termination char
 			std::unique_ptr<BYTE[]> pBuffer(new BYTE[requiredSize]);
-			::ZeroMemory(pBuffer.get(), requiredSize);
+			::SecureZeroMemory(pBuffer.get(), requiredSize);
 			result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, pBuffer.get(), &requiredSize);
 			if (result == ERROR_SUCCESS)
 			{
-				value.swap(std::wstring(reinterpret_cast<wchar_t*>(pBuffer.get()), static_cast<size_t>(requiredSize / sizeof(wchar_t))));
+				value.swap(std::wstring(reinterpret_cast<wchar_t*>(pBuffer.get())));
 			}
 
 			return result;
