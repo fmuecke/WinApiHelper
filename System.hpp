@@ -45,12 +45,14 @@ namespace WinApiHelper
 			std::wstring CurrentBuildNumber;
 			std::wstring BuildLabEx;
 			std::wstring CurrentVersion;
+            std::wstring CSDBuildNumber; // up to windows 7
+            std::wstring CSDVersion; // up to windows 7
 			std::wstring EditionId;
 			std::wstring ProductName;
 			std::wstring Architecture;
 			std::wstring Language;
-			DWORD CurrentMajorVersionNumber;
-			DWORD CurrentMinorVersionNumber;
+			DWORD CurrentMajorVersionNumber = 0;
+			DWORD CurrentMinorVersionNumber = 0;
 
 			std::wstring ToString()
 			{
@@ -74,8 +76,13 @@ namespace WinApiHelper
 				}
 				reg.TryReadString(L"CurrentBuildNumber", CurrentBuildNumber);
 				reg.TryReadDword(L"CurrentMajorVersionNumber", CurrentMajorVersionNumber);
-				reg.TryReadDword(L"CurrentMinorVersionNumber", CurrentMinorVersionNumber);				
-				reg.TryReadString(L"BuildLabEx", BuildLabEx);
+				reg.TryReadDword(L"CurrentMinorVersionNumber", CurrentMinorVersionNumber);	
+                reg.TryReadString(L"CSDbuildNumber", CSDBuildNumber);
+                reg.TryReadString(L"CSDVersion", CSDVersion);
+                if (reg.TryReadString(L"BuildLabEx", BuildLabEx) != NO_ERROR)
+                {
+                    reg.TryReadString(L"BuildLab", BuildLabEx);
+                }
 				reg.TryReadString(L"CurrentVersion", CurrentVersion);
 				reg.TryReadString(L"EditionId", EditionId);
 				reg.TryReadString(L"ProductName", ProductName);
