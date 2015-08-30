@@ -3,6 +3,8 @@
 #include "Registry.hpp"
 #include "Environment.hpp"
 #include "Locale.hpp"
+#include "Security.hpp"
+
 #include <string>
 
 namespace WinApiHelper
@@ -39,6 +41,30 @@ namespace WinApiHelper
 			Locale::LCIDToLocaleName(GetSystemDefaultLCID(), locale);
 			return locale;
 		}
+		
+		// Retrieves the account names (domain\user) for all local accounts
+		static DWORD GetLocalAccounts(std::vector<std::wstring>& values)
+		{
+			Registry reg;
+			DWORD ret = reg.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList", Registry::Mode::Read);
+			if (ret != ERROR_SUCCESS) return ret;
+			std::vector<std::wstring> profileSids;
+			ret = reg.EnumKeys(profileSids);
+			if (ret != ERROR_SUCCESS) return ret;
+			
+			std::vector<std::wstring> _accounts;
+			for (auto const& sidStr : profileSids)
+			{
+				std::wstring user;
+				std::wstring domain;
+				ret = Security::SidToAccountName(sidStr, user, domain);
+				if (ret != ERROR_SUCCESS) return ret;
+				_accounts.push_back(domain + L"\\" + user);
+			}
+
+			values.swap(_accounts);
+			return ERROR_SUCCESS;
+		}		
 
 		struct WindowsVersion
 		{
@@ -101,5 +127,5 @@ namespace WinApiHelper
 				return ERROR_SUCCESS;
 			}
 		};
-	};
+	}
 }
