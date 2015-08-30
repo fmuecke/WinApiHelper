@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <string>
+#include <vector>
 #include <memory>
 
 #pragma comment(lib, "Advapi32.lib")
@@ -55,6 +56,29 @@ namespace WinApiHelper
 		{
 			Close();
 			return ::RegOpenKeyExW(hKey, subKey.c_str(), 0, static_cast<REGSAM>(mode), &_hKey);
+		}
+		
+		DWORD EnumKeys(std::vector<std::wstring>& subKeys)
+		{
+			DWORD nSubKey = 0;
+			DWORD maxSubKeyLen = 0;
+			DWORD ret = ::RegQueryInfoKey(_hKey, NULL, NULL, 0, &nSubKey, &maxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL);
+			if (ret != ERROR_SUCCESS) return ret;
+			std::vector<wchar_t> buffer(maxSubKeyLen + 1, 0);
+			DWORD index = 0;
+			DWORD keyLen = maxSubKeyLen + 1;
+			std::vector<std::wstring> values;
+			ret = ::RegEnumKeyExW(_hKey, index++, &buffer[0], &keyLen, 0, NULL, NULL, NULL);
+			while (ret == ERROR_SUCCESS)
+			{
+				values.push_back(std::wstring(&buffer[0], keyLen));
+				keyLen = maxSubKeyLen + 1;
+				ret = ::RegEnumKeyExW(_hKey, index++, &buffer[0], &keyLen, 0, NULL, NULL, NULL);
+			}
+		
+			if (ret != ERROR_NO_MORE_ITEMS) return ret;
+			subKeys.swap(values);
+			return ERROR_SUCCESS;
 		}
 
 		DWORD TryReadString(std::wstring const& name, std::wstring& value)
