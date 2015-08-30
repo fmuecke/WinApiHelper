@@ -1,5 +1,8 @@
 #pragma once
 
+#include <windows.h>
+#include <Sddl.h>
+
 #include <string>
 #include <memory>
 
