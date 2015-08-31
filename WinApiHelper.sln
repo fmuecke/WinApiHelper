@@ -9,6 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LocalAccounts", "Examples\L
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinApiHelper", "WinApiHelper", "{1F98918D-2AEE-42AF-8806-BEC1E06E5F62}"
 	ProjectSection(SolutionItems) = preProject
+		WinApiHelper\Encoding.hpp = WinApiHelper\Encoding.hpp
 		WinApiHelper\Environment.hpp = WinApiHelper\Environment.hpp
 		WinApiHelper\Locale.hpp = WinApiHelper\Locale.hpp
 		WinApiHelper\Registry.hpp = WinApiHelper\Registry.hpp
@@ -17,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinApiHelper", "WinApiHelpe
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsVersion", "Examples\WindowsVersion\WindowsVersion.vcxproj", "{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Base64Test", "Base64Test\Base64Test.vcxproj", "{EEE96377-52D9-4762-A54D-0375955C75DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +53,14 @@ Global
 		{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}.Release|Win32.Build.0 = Release|Win32
 		{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}.Release|x64.ActiveCfg = Release|x64
 		{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}.Release|x64.Build.0 = Release|x64
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Debug|Win32.Build.0 = Debug|Win32
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Debug|x64.ActiveCfg = Debug|x64
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Debug|x64.Build.0 = Debug|x64
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|Win32.ActiveCfg = Release|Win32
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|Win32.Build.0 = Release|Win32
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|x64.ActiveCfg = Release|x64
+		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
