@@ -39,7 +39,7 @@ namespace WinApiHelper
 		static std::wstring GetDefaultLocaleName()
 		{
 			std::wstring locale;
-			Locale::LCIDToLocaleName(GetSystemDefaultLCID(), locale);
+            Locale::LCIDToLocaleName(GetSystemDefaultUILanguage(), locale);
 			return locale;
 		}
 		
@@ -73,7 +73,7 @@ namespace WinApiHelper
 			std::wstring BuildLabEx;
 			std::wstring CurrentVersion;
             std::wstring CSDBuildNumber; // up to windows 7
-            std::wstring CSDVersion; // up to windows 7
+            std::wstring ServicePack; // up to windows 7
 			std::wstring EditionId;
 			std::wstring ProductName;
 			std::wstring Architecture;
@@ -90,7 +90,14 @@ namespace WinApiHelper
 			std::wstring ToExtendedString()
 			{
 				// will produce somethin like "Windows 10 Pro x64 en-US (Build 10240)"
-				return ProductName + L" " + Architecture + L" " + Language + L" (Build " + CurrentBuildNumber + L")";
+                if (ServicePack.empty())
+                {
+                    return ProductName + L" " + Architecture + L" " + Language + L" (Build " + CurrentBuildNumber + L")";
+                }
+                else
+                {
+                    return ProductName + L" " + ServicePack + L" " + Architecture + L" " + Language + L" (Build " + CurrentBuildNumber + L")";
+                }
 			}
 
 			DWORD Init()
@@ -105,7 +112,12 @@ namespace WinApiHelper
 				reg.TryReadDword(L"CurrentMajorVersionNumber", CurrentMajorVersionNumber);
 				reg.TryReadDword(L"CurrentMinorVersionNumber", CurrentMinorVersionNumber);	
                 reg.TryReadString(L"CSDbuildNumber", CSDBuildNumber);
-                reg.TryReadString(L"CSDVersion", CSDVersion);
+                reg.TryReadString(L"CSDVersion", ServicePack);
+                auto pos = ServicePack.find_last_not_of(L"Service Pack ");
+                if (pos != std::wstring::npos)
+                {
+                    ServicePack = L"SP" + ServicePack.substr(pos);
+                }
                 if (reg.TryReadString(L"BuildLabEx", BuildLabEx) != NO_ERROR)
                 {
                     reg.TryReadString(L"BuildLab", BuildLabEx);
