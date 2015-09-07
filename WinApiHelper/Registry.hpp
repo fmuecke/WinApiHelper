@@ -68,12 +68,12 @@ namespace WinApiHelper
 			DWORD index = 0;
 			DWORD keyLen = maxSubKeyLen + 1;
 			std::vector<std::wstring> values;
-			ret = ::RegEnumKeyExW(_hKey, index++, &buffer[0], &keyLen, 0, NULL, NULL, NULL);
+			ret = ::RegEnumKeyExW(_hKey, index++, buffer.data(), &keyLen, 0, NULL, NULL, NULL);
 			while (ret == ERROR_SUCCESS)
 			{
 				values.push_back(std::wstring(&buffer[0], keyLen));
 				keyLen = maxSubKeyLen + 1;
-				ret = ::RegEnumKeyExW(_hKey, index++, &buffer[0], &keyLen, 0, NULL, NULL, NULL);
+				ret = ::RegEnumKeyExW(_hKey, index++, buffer.data(), &keyLen, 0, NULL, NULL, NULL);
 			}
 		
 			if (ret != ERROR_NO_MORE_ITEMS) return ret;

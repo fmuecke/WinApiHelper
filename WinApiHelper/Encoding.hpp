@@ -37,7 +37,7 @@ namespace WinApiHelper
 		{
 			std::vector<unsigned char> data(base64.size(), 0);
 			DWORD nBytes = data.size();
-			if (::CryptStringToBinaryA(base64.c_str(), 0, CRYPT_STRING_BASE64, &data[0], &nBytes, NULL, NULL))
+			if (::CryptStringToBinaryA(base64.c_str(), 0, CRYPT_STRING_BASE64, data.data(), &nBytes, NULL, NULL))
 			{
 				data.resize(nBytes);
 			}

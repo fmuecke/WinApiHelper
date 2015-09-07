@@ -6,6 +6,7 @@
 #include "Security.hpp"
 
 #include <string>
+#include <vector>
 
 namespace WinApiHelper
 {

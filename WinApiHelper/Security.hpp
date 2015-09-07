@@ -23,11 +23,11 @@ namespace WinApiHelper
 			::LookupAccountSidW(NULL, pSid.get(), NULL, &nameBufferSize, NULL, &domainBufferSize, &sidNameUse);
 			std::vector<wchar_t> nameBuffer(nameBufferSize, 0);
 			std::vector<wchar_t> domainBuffer(domainBufferSize, 0);
-			ret = ::LookupAccountSidW(NULL,	pSid.get(), &nameBuffer[0], &nameBufferSize, &domainBuffer[0], &domainBufferSize, &sidNameUse) != 0;	
+			ret = ::LookupAccountSidW(NULL,	pSid.get(), nameBuffer.data(), &nameBufferSize, domainBuffer.data(), &domainBufferSize, &sidNameUse) != 0;	
 			if (!ret) return ::GetLastError();
 
-			user.assign(&nameBuffer[0]);
-			domain.assign(&domainBuffer[0]);
+			user.assign(nameBuffer.data());
+			domain.assign(domainBuffer.data());
 			return NO_ERROR;
 		}		
 	}
