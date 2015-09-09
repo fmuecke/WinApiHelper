@@ -21,6 +21,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsVersion", "Examples\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Base64Test", "Base64Test\Base64Test.vcxproj", "{EEE96377-52D9-4762-A54D-0375955C75DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StdHelper", "StdHelper", "{C2A206E7-B9AC-472B-8CB9-C68F69A53BBF}"
+	ProjectSection(SolutionItems) = preProject
+		StdHelper\string.hpp = StdHelper\string.hpp
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
