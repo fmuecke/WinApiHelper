@@ -39,7 +39,7 @@ namespace WinApiHelper
 		static std::wstring GetDefaultLocaleName()
 		{
 			std::wstring locale;
-            Locale::LCIDToLocaleName(GetSystemDefaultUILanguage(), locale);
+            Locale::LCIDToLocaleName(::GetSystemDefaultUILanguage(), locale);
 			return locale;
 		}
 		
@@ -60,7 +60,8 @@ namespace WinApiHelper
 				std::wstring domain;
 				ret = Security::SidToAccountName(sidStr, user, domain);
 				if (ret != ERROR_SUCCESS) return ret;
-				_accounts.push_back(domain + L"\\" + user);
+
+                _accounts.push_back(domain.empty() ? user : domain + L"\\" + user);
 			}
 
 			values.swap(_accounts);
