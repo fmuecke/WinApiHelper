@@ -3,6 +3,7 @@
 #include <string>
 #include <system_error>
 #include <filesystem>
+#include <memory>
 #include "../../WinUtil/System.hpp"
 #include "../../WinUtil/Security.hpp"
 
@@ -36,8 +37,56 @@ static UninstallData GetUninstallData(HKEY const& hKey, wstring const& key)
 	return data;
 }
 
+static bool SetProcRegAccessPrivs(bool bSet)
+{
+	HANDLE hToken;
+	vector<byte> buffer(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
+	TOKEN_PRIVILEGES* pTpPriv = (TOKEN_PRIVILEGES*)buffer.data();
+	LUID lPriv1;
+	LUID lPriv2;
+
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	{
+		cerr << "Error getting Process Token: " << ::GetLastError() << endl;
+		return false;
+	}
+
+	if (!LookupPrivilegeValue(NULL, SE_RESTORE_NAME, &lPriv1) || 
+		!LookupPrivilegeValue(NULL, SE_BACKUP_NAME, &lPriv2)
+		)
+	{
+		cerr << "Error getting Privilege Values" << endl;
+		return false;
+	}
+
+	pTpPriv->PrivilegeCount = 2;
+	pTpPriv->Privileges[0].Luid = lPriv1;
+	pTpPriv->Privileges[1].Luid = lPriv2;
+
+	if (bSet)
+	{
+		pTpPriv->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+		pTpPriv->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
+	}
+	else
+	{
+		pTpPriv->Privileges[0].Attributes = 0;
+		pTpPriv->Privileges[1].Attributes = 0;
+	}
+
+	if (ERROR_SUCCESS != AdjustTokenPrivileges(hToken, FALSE, pTpPriv, NULL, (PTOKEN_PRIVILEGES)NULL, NULL))
+	{
+		cerr << "Error setting Privilege Values: " << ::GetLastError() << endl;
+		return false;
+	}
+
+	return true;
+}
+
 int main()
 {
+	SetProcRegAccessPrivs(true);
+
 	vector<UserProfile> profiles;
 	System::GetLocalProfiles(profiles);
 
@@ -91,10 +140,30 @@ int main()
 							uninstallData.emplace_back(std::move(data));
 						}
 
-						wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;
+						wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;					
+						continue;  
 					}
+				}
+				else if (ERROR_BADDB == result) //ERROR_PRIVILEGE_NOT_HELD
+				{
+					// try to really load the hive
+					result = ::RegLoadKeyW(HKEY_USERS, profile.name.c_str(), path.c_str());
 
-					continue;  
+					Registry reg;
+					if (ERROR_SUCCESS == reg.Open(HKEY_USERS, profile.name + L"\\" + uninstallStr, Registry::Mode::Read))
+					{
+						vector<wstring> subKeys;
+						reg.EnumKeys(subKeys);
+						for (auto const& subKey : subKeys)
+						{
+							auto data = GetUninstallData(reg.Key(), subKey);
+							data.userProfile = profile.GetFullAccountName();
+							uninstallData.emplace_back(std::move(data));
+						}
+
+						wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;
+						continue;
+					}
 				}
 				wcerr << profile.name << L": ";
 				auto err = error_code(result, system_category());
