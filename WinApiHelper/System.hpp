@@ -4,6 +4,7 @@
 #include "Environment.hpp"
 #include "Locale.hpp"
 #include "Security.hpp"
+#include "UserProfile.hpp"
 
 #include <string>
 #include <vector>
@@ -44,7 +45,7 @@ namespace WinApiHelper
 		}
 		
 		// Retrieves the account names (domain\user) for all local accounts
-		static DWORD GetLocalAccounts(std::vector<std::wstring>& values)
+		static DWORD GetLocalProfiles(std::vector<UserProfile>& values)
 		{
 			Registry reg;
 			DWORD ret = reg.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList", Registry::Mode::Read);
@@ -53,15 +54,14 @@ namespace WinApiHelper
 			ret = reg.EnumKeys(profileSids);
 			if (ret != ERROR_SUCCESS) return ret;
 			
-			std::vector<std::wstring> _accounts;
+			std::vector<UserProfile> _accounts;
 			for (auto const& sidStr : profileSids)
 			{
-				std::wstring user;
-				std::wstring domain;
-				ret = Security::SidToAccountName(sidStr, user, domain);
-				if (ret != ERROR_SUCCESS) return ret;
-
-                _accounts.push_back(domain.empty() ? user : domain + L"\\" + user);
+				UserProfile profile;
+				profile.sid = sidStr;
+				Registry::TryReadString(reg.Key(), sidStr, L"ProfileImagePath", profile.path);
+				/*DWORD ret = */Security::SidToAccountName(sidStr, profile.name, profile.domain);
+                _accounts.push_back(profile);
 			}
 
 			values.swap(_accounts);

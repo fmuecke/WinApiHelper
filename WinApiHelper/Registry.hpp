@@ -52,6 +52,8 @@ namespace WinApiHelper
 			Close();
 		}
 
+		HKEY Key() const { return _hKey; }
+
 		DWORD Open(HKEY hKey, std::wstring const& subKey, Mode mode)
 		{
 			Close();

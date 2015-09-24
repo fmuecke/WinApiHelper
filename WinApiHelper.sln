@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinApiHelper", "WinAid.vcxproj", "{810E5D95-B75B-450B-8112-6445682A4CF3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LocalAccounts", "Examples\LocalAccounts\LocalAccounts.vcxproj", "{39EF4FE4-4835-4F57-B045-163A807C598B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinApiHelper", "WinApiHelper", "{1F98918D-2AEE-42AF-8806-BEC1E06E5F62}"
@@ -15,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinApiHelper", "WinApiHelpe
 		WinApiHelper\Registry.hpp = WinApiHelper\Registry.hpp
 		WinApiHelper\Security.hpp = WinApiHelper\Security.hpp
 		WinApiHelper\System.hpp = WinApiHelper\System.hpp
+		WinApiHelper\UserProfile.hpp = WinApiHelper\UserProfile.hpp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsVersion", "Examples\WindowsVersion\WindowsVersion.vcxproj", "{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}"
@@ -26,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StdHelper", "StdHelper", "{
 		StdHelper\string.hpp = StdHelper\string.hpp
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExamineUserRegHives", "Examples\ExamineUserRegHives\ExamineUserRegHives.vcxproj", "{97F18E38-6E5E-4D40-A1ED-C5E991208560}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -34,14 +35,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Debug|Win32.Build.0 = Debug|Win32
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Debug|x64.ActiveCfg = Debug|x64
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Debug|x64.Build.0 = Debug|x64
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Release|Win32.ActiveCfg = Release|Win32
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Release|Win32.Build.0 = Release|Win32
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Release|x64.ActiveCfg = Release|x64
-		{810E5D95-B75B-450B-8112-6445682A4CF3}.Release|x64.Build.0 = Release|x64
 		{39EF4FE4-4835-4F57-B045-163A807C598B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{39EF4FE4-4835-4F57-B045-163A807C598B}.Debug|Win32.Build.0 = Debug|Win32
 		{39EF4FE4-4835-4F57-B045-163A807C598B}.Debug|x64.ActiveCfg = Debug|x64
@@ -66,6 +59,14 @@ Global
 		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|Win32.Build.0 = Release|Win32
 		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|x64.ActiveCfg = Release|x64
 		{EEE96377-52D9-4762-A54D-0375955C75DF}.Release|x64.Build.0 = Release|x64
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Debug|Win32.ActiveCfg = Debug|Win32
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Debug|Win32.Build.0 = Debug|Win32
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Debug|x64.ActiveCfg = Debug|x64
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Debug|x64.Build.0 = Debug|x64
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Release|Win32.ActiveCfg = Release|Win32
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Release|Win32.Build.0 = Release|Win32
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Release|x64.ActiveCfg = Release|x64
+		{97F18E38-6E5E-4D40-A1ED-C5E991208560}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
