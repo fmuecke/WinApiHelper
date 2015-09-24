@@ -3,14 +3,14 @@
 #include <string>
 #include <memory>
 
-#include "../../WinApiHelper/System.hpp"
+#include "../../WinUtil/System.hpp"
 
 using namespace std;
 
 int main()
 {
-	vector<wstring> accounts;
-	auto ret = WinApiHelper::System::GetLocalAccounts(accounts);
+	vector<WinUtil::UserProfile> accounts;
+	auto ret = WinUtil::System::GetLocalProfiles(accounts);
 	if (ret != ERROR_SUCCESS)
 	{
 		cerr << "error code: " << ret << endl;
@@ -18,7 +18,7 @@ int main()
 	}
 	for (auto const& account : accounts)
 	{
-		wcout << account << endl;
+		wcout << account.GetFullAccountName() << endl;
 	}
 	
 	return 0;

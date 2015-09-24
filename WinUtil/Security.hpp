@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace WinApiHelper
+namespace WinUtil
 {
 	namespace Security
 	{

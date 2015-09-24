@@ -3,12 +3,12 @@
 #include <string>
 #include <system_error>
 #include <filesystem>
-#include "../../WinApiHelper/System.hpp"
-#include "../../WinApiHelper/Security.hpp"
+#include "../../WinUtil/System.hpp"
+#include "../../WinUtil/Security.hpp"
 
 using namespace std;
 using namespace std::tr2;
-using namespace WinApiHelper;
+using namespace WinUtil;
 
 static wchar_t const * const uninstallStr = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
 

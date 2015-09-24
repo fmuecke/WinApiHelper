@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <string>
 
-namespace WinApiHelper
+namespace WinUtil
 {
 	namespace Locale
 	{

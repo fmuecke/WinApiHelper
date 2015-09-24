@@ -9,7 +9,7 @@
 
 #pragma comment(lib, "Crypt32.lib")
 
-namespace WinApiHelper
+namespace WinUtil
 {
 	namespace Encoding
 	{

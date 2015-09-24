@@ -6,7 +6,7 @@
 
 #pragma comment(lib, "Advapi32.lib")
 
-namespace WinApiHelper
+namespace WinUtil
 {
 	class Registry
 	{

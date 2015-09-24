@@ -1,5 +1,5 @@
-#include "../../WinApiHelper/System.hpp"
-#include "../../WinApiHelper/Locale.hpp"
+#include "../../WinUtil/System.hpp"
+#include "../../WinUtil/Locale.hpp"
 #include "../../StdHelper/string.hpp"
 #include <iostream>
 #include <string>
@@ -8,7 +8,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace WinApiHelper;
+using namespace WinUtil;
 
 
 int main()
