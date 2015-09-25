@@ -7,7 +7,7 @@
 namespace StdHelper
 {
 	template <typename T>
-	std::vector<T> split(const T& s, const T& delim, const bool keep_empty)
+	std::vector<T> Split(const T& s, const T& delim, const bool keep_empty)
 	{
 		std::vector<T> result;
 		if (delim.empty())
@@ -29,13 +29,23 @@ namespace StdHelper
 		return result;
 	}
 
-	static std::vector<std::string> split(const std::string& s, const std::string& delim, const bool keep_empty = true)
+    static std::vector<std::string> SplitNoEmpties(const std::string& s, const std::string& delim)
+    {
+        return Split<std::string>(s, delim, false);
+    }
+
+    static std::vector<std::wstring> SplitNoEmpties(const std::wstring& s, const std::wstring& delim)
+    {
+        return Split<std::wstring>(s, delim, false);
+    }
+
+	static std::vector<std::string> SplitKeepEmpties(const std::string& s, const std::string& delim)
 	{
-		return split<std::string>(s, delim, keep_empty);
+		return Split<std::string>(s, delim, true);
 	}
 
-	static std::vector<std::wstring> split(const std::wstring& s, const std::wstring& delim, const bool keep_empty = true)
+	static std::vector<std::wstring> SplitKeepEmpties(const std::wstring& s, const std::wstring& delim)
 	{
-		return split<std::wstring>(s, delim, keep_empty);
+		return Split<std::wstring>(s, delim, true);
 	}
 }
