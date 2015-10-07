@@ -10,11 +10,9 @@
 using namespace std;
 using namespace WinUtil;
 
-
 int main()
 {
 	auto tokens = StdHelper::split(L": . . :", L":", false);
-	
 	System::WindowsVersion winVer;
 	winVer.Init();
 

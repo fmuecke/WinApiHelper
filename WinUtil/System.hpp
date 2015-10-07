@@ -141,5 +141,18 @@ namespace WinUtil
 				return ERROR_SUCCESS;
 			}
 		};
+
+		// Returns one of these: FAT, FAT32, NTFS, HPFS, CDFS, UDF, NWFS, exFAT
+		static std::wstring GetFileSystemType(std::wstring const& volume)
+		{
+			wchar_t szFileSystemName[MAX_PATH + 1]{ 0 };
+			auto const& pVolume = volume.empty() ? nullptr : volume.c_str();
+
+			if (::GetVolumeInformationW(pVolume, nullptr, 0, nullptr, nullptr, nullptr, szFileSystemName, sizeof(szFileSystemName)))
+			{
+				return std::wstring(szFileSystemName);
+			}
+			return std::wstring();
+		}
 	}
 }
