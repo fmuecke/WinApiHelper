@@ -10,6 +10,7 @@ namespace WinUtil
 {
 	class Registry
 	{
+
 	public:
 		enum class Mode
 		{
@@ -42,8 +43,6 @@ namespace WinUtil
 			Close();
 		}
 
-		HKEY Key() const { return _hKey; }
-
 		DWORD Open(HKEY hKey, std::wstring const& subKey, Mode mode)
 		{
 			Close();
@@ -52,6 +51,7 @@ namespace WinUtil
 		
 		DWORD EnumKeys(std::vector<std::wstring>& subKeys)
 		{
+			if (_hKey == 0) return ERROR_INVALID_HANDLE; 
 			DWORD nSubKey = 0;
 			DWORD maxSubKeyLen = 0;
 			DWORD ret = ::RegQueryInfoKey(_hKey, NULL, NULL, 0, &nSubKey, &maxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -75,6 +75,7 @@ namespace WinUtil
 
 		DWORD TryReadString(std::wstring const& name, std::wstring& value)
 		{
+			if (_hKey == 0) return ERROR_INVALID_HANDLE;
 			DWORD requiredSize = 0;
 			auto result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, nullptr, &requiredSize);
 			if (result != ERROR_SUCCESS) return result;
@@ -100,6 +101,7 @@ namespace WinUtil
 
 		DWORD TryReadDword(std::wstring const& name, DWORD& value)
 		{
+			if (_hKey == 0) return ERROR_INVALID_HANDLE;
 			DWORD resultVal = 0;
 			DWORD size = sizeof(resultVal);
 			auto result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, reinterpret_cast<BYTE*>(&resultVal), &size);
@@ -115,6 +117,7 @@ namespace WinUtil
 			if (reg.Open(hKey, subKey, Mode::Read) != ERROR_SUCCESS) return false;
 			return reg.TryReadDword(name, value) == ERROR_SUCCESS;
 		}
+	
 	private:
 		void Close()
 		{
@@ -124,7 +127,8 @@ namespace WinUtil
 				_hKey = 0;
 			}
 		}
-		
+	
 		HKEY _hKey = 0;
 	};
+
 }
