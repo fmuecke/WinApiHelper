@@ -10,16 +10,6 @@ namespace WinUtil
 {
 	class Registry
 	{
-		HKEY _hKey = 0;
-		void Close()
-		{
-			if (_hKey != 0)
-			{
-				::RegCloseKey(_hKey);
-				_hKey = 0;
-			}
-		}
-
 	public:
 		enum class Mode
 		{
@@ -95,7 +85,7 @@ namespace WinUtil
 			result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, pBuffer.get(), &requiredSize);
 			if (result == ERROR_SUCCESS)
 			{
-				value.swap(std::wstring(reinterpret_cast<wchar_t*>(pBuffer.get())));
+				value.assign(reinterpret_cast<wchar_t*>(pBuffer.get()));
 			}
 
 			return result;
@@ -125,6 +115,16 @@ namespace WinUtil
 			if (reg.Open(hKey, subKey, Mode::Read) != ERROR_SUCCESS) return false;
 			return reg.TryReadDword(name, value) == ERROR_SUCCESS;
 		}
+	private:
+		void Close()
+		{
+			if (_hKey != 0)
+			{
+				::RegCloseKey(_hKey);
+				_hKey = 0;
+			}
+		}
+		
+		HKEY _hKey = 0;
 	};
-
 }
