@@ -1,3 +1,4 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #pragma once
 
 #include <windows.h>

@@ -1,3 +1,4 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #pragma once
 
 #include "Registry.hpp"
@@ -22,9 +23,11 @@ namespace WinUtil
 
 		bool IsWow64()
 		{
-			typedef BOOL(WINAPI *ISWOW64PROCESS) (HANDLE, PBOOL);
+			auto hModule = GetModuleHandleW(L"kernel32.dll");
+			if (!hModule) return false;
+			using ISWOW64PROCESS = BOOL(WINAPI*)(HANDLE, PBOOL);
 			ISWOW64PROCESS fnIsWow64Process = 
-				(ISWOW64PROCESS)::GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "IsWow64Process");
+				(ISWOW64PROCESS)::GetProcAddress(hModule, "IsWow64Process");
 			BOOL bIsWow64 = false;
 			if (NULL != fnIsWow64Process)
 			{

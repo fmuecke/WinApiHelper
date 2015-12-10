@@ -1,3 +1,4 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #include <vector>
 
 namespace StdHelper

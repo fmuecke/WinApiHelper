@@ -1,4 +1,6 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #pragma once
+
 #include <Windows.h>
 #include <string>
 #include <vector>

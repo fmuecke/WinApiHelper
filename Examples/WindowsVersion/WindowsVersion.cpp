@@ -1,3 +1,4 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #include "../../WinUtil/System.hpp"
 #include "../../WinUtil/Locale.hpp"
 #include "../../StdHelper/string.hpp"
@@ -12,7 +13,6 @@ using namespace WinUtil;
 
 int main()
 {
-	auto tokens = StdHelper::split(L": . . :", L":", false);
 	System::WindowsVersion winVer;
 	winVer.Init();
 
