@@ -1,3 +1,4 @@
+// Copyright 2015 Florian Muecke. All rights reserved.
 #include <iostream>
 #include <vector>
 #include <string>
@@ -23,7 +24,7 @@ struct UninstallData
 
 	wstring ToText() const 
 	{
-		return userProfile + L": " + key + L" / " + publisher + L" /" + displayName + L" / " + displayVersion;
+		return userProfile + L": DisplayName=" + displayName + L", Publisher=" + publisher + L", DisplayVersion=" + displayVersion + L", Key=" + key;
 	}
 };
 
@@ -40,59 +41,83 @@ static UninstallData GetUninstallData(HKEY const& hKey, wstring const& key)
 static bool SetProcRegAccessPrivs(bool bSet)
 {
 	HANDLE hToken;
-	vector<byte> buffer(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
-	TOKEN_PRIVILEGES* pTpPriv = (TOKEN_PRIVILEGES*)buffer.data();
-	LUID lPriv1;
-	LUID lPriv2;
-
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	if (!::OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 	{
-		cerr << "Error getting Process Token: " << ::GetLastError() << endl;
+		cerr << "Error opening process token: " << ::GetLastError() << endl;
 		return false;
 	}
 
-	if (!LookupPrivilegeValue(NULL, SE_RESTORE_NAME, &lPriv1) || 
-		!LookupPrivilegeValue(NULL, SE_BACKUP_NAME, &lPriv2)
-		)
+	LUID restorePriv, backupPriv;
+	if (!::LookupPrivilegeValue(nullptr, SE_RESTORE_NAME, &restorePriv) ||
+		!::LookupPrivilegeValue(nullptr, SE_BACKUP_NAME, &backupPriv))
 	{
-		cerr << "Error getting Privilege Values" << endl;
+		cerr << "Error getting privilege values" << endl;
 		return false;
 	}
 
-	pTpPriv->PrivilegeCount = 2;
-	pTpPriv->Privileges[0].Luid = lPriv1;
-	pTpPriv->Privileges[1].Luid = lPriv2;
+	// create buffer with enough space for token privileges and an additional LUID with attributes
+	auto buffer = std::vector<byte>(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
+	TOKEN_PRIVILEGES* pTokenPrivileges = (TOKEN_PRIVILEGES*)buffer.data();
+	pTokenPrivileges->PrivilegeCount = 2;
+	pTokenPrivileges->Privileges[0].Luid = restorePriv;
+	pTokenPrivileges->Privileges[0].Attributes = bSet? SE_PRIVILEGE_ENABLED : 0;
+	pTokenPrivileges->Privileges[1].Luid = backupPriv;
+	pTokenPrivileges->Privileges[1].Attributes = bSet? SE_PRIVILEGE_ENABLED : 0;
 
-	if (bSet)
+	if (!::AdjustTokenPrivileges(hToken, FALSE, pTokenPrivileges, 0, nullptr, nullptr))
 	{
-		pTpPriv->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		pTpPriv->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
-	}
-	else
-	{
-		pTpPriv->Privileges[0].Attributes = 0;
-		pTpPriv->Privileges[1].Attributes = 0;
-	}
-
-	if (ERROR_SUCCESS != AdjustTokenPrivileges(hToken, FALSE, pTpPriv, NULL, (PTOKEN_PRIVILEGES)NULL, NULL))
-	{
-		cerr << "Error setting Privilege Values: " << ::GetLastError() << endl;
+		auto err = ::GetLastError();
+		cerr << "Error setting privilege values: " << err << endl;
 		return false;
 	}
 
 	return true;
 }
 
+static vector<UninstallData> ScanUserKey(HKEY appKey, wstring const& subKey, WinUtil::UserProfile const& profile)
+{
+	vector<UninstallData> result;
+	Registry reg;
+	auto openResult = reg.Open(appKey, subKey, Registry::Mode::Read);
+	if (openResult == ERROR_FILE_NOT_FOUND)
+	{
+		// no software subkey for this user
+		return result;
+	}
+
+	if (openResult == ERROR_SUCCESS)
+	{
+		vector<wstring> subKeys;
+		reg.EnumKeys(subKeys);
+		for (auto const& key : subKeys)
+		{
+			auto data = GetUninstallData(reg.Key(), key);
+			data.userProfile = profile.GetFullAccountName();
+			result.push_back(std::move(data));
+		}
+	}
+	else
+	{
+		auto err = error_code(openResult, system_category());
+		cerr << "error: " << err.message();
+	}
+
+	return result;
+}
+
 int main()
 {
 	SetProcRegAccessPrivs(true);
+	bool verbose = false;
 
 	vector<UserProfile> profiles;
 	System::GetLocalProfiles(profiles);
 
 	vector<UninstallData> uninstallData;
-	typedef LONG(WINAPI *REGLOADAPPKEY)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
-	REGLOADAPPKEY fnRegLoadAppKey = (REGLOADAPPKEY)::GetProcAddress(GetModuleHandleW(L"Advapi32.dll"), "RegLoadAppKeyW");
+	using RegLoadAppKeyFun = LONG(WINAPI*)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
+	auto hModule = GetModuleHandleW(L"Advapi32.dll");
+	if (!hModule) exit(1);
+	RegLoadAppKeyFun fnRegLoadAppKey = (RegLoadAppKeyFun)::GetProcAddress(hModule, "RegLoadAppKeyW");
 	if (fnRegLoadAppKey)
 	{
 		for (auto const& profile : profiles)
@@ -103,70 +128,36 @@ int main()
 			if (!sys::exists(sys::path(path))) continue;
 
 			HKEY appKey;
-			DWORD result = fnRegLoadAppKey(path.c_str(), &appKey, KEY_ALL_ACCESS, REG_PROCESS_APPKEY, 0);
-			if (ERROR_SUCCESS == result)
+			DWORD loadResult = fnRegLoadAppKey(path.c_str(), &appKey, KEY_ALL_ACCESS, REG_PROCESS_APPKEY, 0);
+			if (ERROR_SUCCESS == loadResult || ERROR_SHARING_VIOLATION == loadResult)
 			{
-				wcout << profile.name << ": success" << endl;
-
-				Registry reg;
-				auto success = reg.Open(appKey, wstring(uninstallStr), Registry::Mode::Read);
-				vector<wstring> subKeys;
-				reg.EnumKeys(subKeys);
-				for (auto const& subKey : subKeys)
-				{
-					auto data = GetUninstallData(reg.Key(), subKey);
-					data.userProfile = profile.GetFullAccountName();
-					uninstallData.emplace_back(std::move(data));
-				}
-				
-				wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;
+				auto subKey = ERROR_SUCCESS == loadResult ? wstring(uninstallStr) : profile.sid + L"\\" + uninstallStr;
+				if (ERROR_SHARING_VIOLATION == loadResult) appKey = HKEY_USERS;
+				auto userData = ScanUserKey(appKey, subKey, profile);
+				if (verbose) wcout << profile.GetFullAccountName() << L": " << userData.size() << L" found" << endl;
+				uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
 
 				::RegCloseKey(appKey);
 			}
 			else
 			{
-				if (ERROR_SHARING_VIOLATION == result)
+				if (ERROR_BADDB == loadResult) //ERROR_PRIVILEGE_NOT_HELD
 				{
-					// key is already loaded
-					Registry reg;
-					if (ERROR_SUCCESS == reg.Open(HKEY_USERS, profile.sid + L"\\" + uninstallStr, Registry::Mode::Read))
+					// really load the hive
+					loadResult = ::RegLoadKeyW(HKEY_USERS, profile.name.c_str(), path.c_str());
+					if (loadResult == ERROR_SUCCESS)
 					{
-						vector<wstring> subKeys;
-						reg.EnumKeys(subKeys);
-						for (auto const& subKey : subKeys)
-						{
-							auto data = GetUninstallData(reg.Key(), subKey);
-							data.userProfile = profile.GetFullAccountName();
-							uninstallData.emplace_back(std::move(data));
-						}
+						auto subKey = "";
+						auto userData = ScanUserKey(HKEY_USERS, profile.name + L"\\" + uninstallStr, profile);
+						if (verbose) wcout << profile.GetFullAccountName() << L": " << userData.size() << L" found" << endl;
+						uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
 
-						wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;					
-						continue;  
-					}
-				}
-				else if (ERROR_BADDB == result) //ERROR_PRIVILEGE_NOT_HELD
-				{
-					// try to really load the hive
-					result = ::RegLoadKeyW(HKEY_USERS, profile.name.c_str(), path.c_str());
-
-					Registry reg;
-					if (ERROR_SUCCESS == reg.Open(HKEY_USERS, profile.name + L"\\" + uninstallStr, Registry::Mode::Read))
-					{
-						vector<wstring> subKeys;
-						reg.EnumKeys(subKeys);
-						for (auto const& subKey : subKeys)
-						{
-							auto data = GetUninstallData(reg.Key(), subKey);
-							data.userProfile = profile.GetFullAccountName();
-							uninstallData.emplace_back(std::move(data));
-						}
-
-						wcout << profile.GetFullAccountName() << L": " << subKeys.size() << L" found" << endl;
+						::RegUnLoadKeyW(HKEY_USERS, profile.name.c_str());
 						continue;
 					}
 				}
 				wcerr << profile.name << L": ";
-				auto err = error_code(result, system_category());
+				auto err = error_code(loadResult, system_category());
 				cerr << "error " << err.value() << ": " << err.message();
 			}
 		}
@@ -174,9 +165,10 @@ int main()
 	else
 	{
 		cerr << "platform not supported" << endl;
+		exit(ERROR_INVALID_FUNCTION);
 	}
 
-	wcout << endl << L"items: " << endl;
+	wcout << uninstallData.size() << L" found\n";
 	for (auto const& data : uninstallData)
 	{
 		wcout << data.ToText() << endl;
