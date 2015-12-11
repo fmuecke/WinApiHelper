@@ -5,6 +5,8 @@
 #include <system_error>
 #include <filesystem>
 #include <memory>
+#include <io.h>
+#include <fcntl.h>
 #include "../../WinUtil/System.hpp"
 #include "../../WinUtil/Security.hpp"
 
@@ -107,7 +109,9 @@ static vector<UninstallData> ScanUserKey(HKEY appKey, wstring const& subKey, Win
 
 int main()
 {
-	SetProcRegAccessPrivs(true);
+    _setmode(_fileno(stdout), _O_U16TEXT);
+
+    SetProcRegAccessPrivs(true);
 	bool verbose = false;
 
 	vector<UserProfile> profiles;
@@ -168,10 +172,11 @@ int main()
 		exit(ERROR_INVALID_FUNCTION);
 	}
 
-	wcout << uninstallData.size() << L" found\n";
+    wcout << uninstallData.size() << L" found\n";
 	for (auto const& data : uninstallData)
 	{
-		wcout << data.ToText() << endl;
+        auto result = data.ToText();
+        wcout << result << endl;
 	}
 
 	return 0;
