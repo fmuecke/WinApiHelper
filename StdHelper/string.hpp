@@ -21,7 +21,7 @@ namespace StdHelper
 		while (true)
 		{
 			subend = std::search(substart, s.end(), delim.begin(), delim.end());
-			T temp(substart, subend);
+            T temp{ substart, subend };
 			if (keep_empty || !temp.empty()) result.push_back(temp);
 			if (subend == s.end())  break;
 			substart = subend + delim.size();

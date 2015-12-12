@@ -6,10 +6,10 @@ namespace WinUtil
 {
 	struct UserProfile
 	{
-		std::wstring name;
-		std::wstring sid;
-		std::wstring path;
-		std::wstring domain;
+        std::wstring name{};
+		std::wstring sid{};
+		std::wstring path{};
+		std::wstring domain{};
 
 		std::wstring GetFullAccountName() const 
 		{

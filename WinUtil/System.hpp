@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 namespace WinUtil
 {
@@ -23,21 +24,26 @@ namespace WinUtil
 
 		bool IsWow64()
 		{
-			auto hModule = GetModuleHandleW(L"kernel32.dll");
+			auto hModule = ::GetModuleHandleW(L"kernel32.dll");
 			if (!hModule) return false;
-			using ISWOW64PROCESS = BOOL(WINAPI*)(HANDLE, PBOOL);
-			ISWOW64PROCESS fnIsWow64Process = 
-				(ISWOW64PROCESS)::GetProcAddress(hModule, "IsWow64Process");
-			BOOL bIsWow64 = false;
+
+			using IsWow64ProcessFun = BOOL(WINAPI*)(HANDLE, PBOOL);
+			IsWow64ProcessFun fnIsWow64Process{ nullptr };
+			[[suppress(type.1)]] // suppress reinterpret_cast
+			{
+				fnIsWow64Process = reinterpret_cast<IsWow64ProcessFun>(::GetProcAddress(hModule, "IsWow64Process"));
+			}
+
+			BOOL isWow64{ false };
 			if (NULL != fnIsWow64Process)
 			{
-				if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
+				if (!fnIsWow64Process(::GetCurrentProcess(), &isWow64))
 				{
 					return false;
 				}
 			}
 
-			return bIsWow64 != 0;
+			return isWow64 != 0;
 		}
 
 		static std::wstring GetDefaultLocaleName()
@@ -73,15 +79,15 @@ namespace WinUtil
 
 		struct WindowsVersion
 		{
-			std::wstring CurrentBuildNumber;
-			std::wstring BuildLabEx;
-			std::wstring CurrentVersion;
-            std::wstring CSDBuildNumber; // up to windows 7
-            std::wstring ServicePack; // up to windows 7
-			std::wstring EditionId;
-			std::wstring ProductName;
-			std::wstring Architecture;
-			std::wstring Language;
+            std::wstring CurrentBuildNumber{};
+            std::wstring BuildLabEx{};
+            std::wstring CurrentVersion{};
+            std::wstring CSDBuildNumber{}; // up to windows 7
+            std::wstring ServicePack{}; // up to windows 7
+			std::wstring EditionId{};
+			std::wstring ProductName{};
+			std::wstring Architecture{};
+			std::wstring Language{};
 			DWORD CurrentMajorVersionNumber = 0;
 			DWORD CurrentMinorVersionNumber = 0;
 
@@ -138,8 +144,8 @@ namespace WinUtil
 					reg.TryReadString(L"CurrentVersion", CurrentVersion);
 				}
 
-				Architecture = IsX64() ? L"x64" : L"x86";
-				Language = GetDefaultLocaleName();// .substr(0, 2);
+				Architecture = IsX64() ? std::wstring(L"x64") : std::wstring(L"x86");
+				Language = GetDefaultLocaleName();
 
 				return ERROR_SUCCESS;
 			}
@@ -148,12 +154,12 @@ namespace WinUtil
 		// Returns one of these: FAT, FAT32, NTFS, HPFS, CDFS, UDF, NWFS, exFAT
 		static std::wstring GetFileSystemType(std::wstring const& volume)
 		{
-			wchar_t szFileSystemName[MAX_PATH + 1]{ 0 };
+			auto szFileSystemName = std::array<wchar_t, MAX_PATH + 1>{ 0 };
 			auto const& pVolume = volume.empty() ? nullptr : volume.c_str();
 
-			if (::GetVolumeInformationW(pVolume, nullptr, 0, nullptr, nullptr, nullptr, szFileSystemName, sizeof(szFileSystemName)))
+			if (::GetVolumeInformationW(pVolume, nullptr, 0, nullptr, nullptr, nullptr, szFileSystemName.data(), szFileSystemName.size()))
 			{
-				return std::wstring(szFileSystemName);
+				return std::wstring(szFileSystemName.data());
 			}
 			return std::wstring();
 		}

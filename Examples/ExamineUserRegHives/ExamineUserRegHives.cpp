@@ -18,11 +18,11 @@ static wchar_t const * const uninstallStr = L"SOFTWARE\\Microsoft\\Windows\\Curr
 
 struct UninstallData
 {
-	wstring userProfile;
-	wstring key;
-	wstring displayName;
-	wstring displayVersion;
-	wstring publisher;
+	wstring userProfile{};
+	wstring key{};
+	wstring displayName{};
+	wstring displayVersion{};
+	wstring publisher{};
 
 	wstring ToText() const 
 	{
@@ -32,7 +32,7 @@ struct UninstallData
 
 static UninstallData GetUninstallData(HKEY const& hKey, wstring const& key)
 {
-	UninstallData data;
+	UninstallData data{};
 	data.key = key;
 	Registry::TryReadString(hKey, key, L"DisplayName", data.displayName);
 	Registry::TryReadString(hKey, key, L"DisplayVersion", data.displayVersion);
@@ -40,7 +40,7 @@ static UninstallData GetUninstallData(HKEY const& hKey, wstring const& key)
 	return data;
 }
 
-static bool SetProcRegAccessPrivs(bool bSet)
+static bool SetProcRegAccessPrivs(bool doSet)
 {
 	HANDLE hToken;
 	if (!::OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
@@ -49,7 +49,8 @@ static bool SetProcRegAccessPrivs(bool bSet)
 		return false;
 	}
 
-	LUID restorePriv, backupPriv;
+	LUID restorePriv{};
+	LUID backupPriv{};
 	if (!::LookupPrivilegeValue(nullptr, SE_RESTORE_NAME, &restorePriv) ||
 		!::LookupPrivilegeValue(nullptr, SE_BACKUP_NAME, &backupPriv))
 	{
@@ -58,19 +59,25 @@ static bool SetProcRegAccessPrivs(bool bSet)
 	}
 
 	// create buffer with enough space for token privileges and an additional LUID with attributes
-	auto buffer = std::vector<byte>(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
-	TOKEN_PRIVILEGES* pTokenPrivileges = (TOKEN_PRIVILEGES*)buffer.data();
-	pTokenPrivileges->PrivilegeCount = 2;
-	pTokenPrivileges->Privileges[0].Luid = restorePriv;
-	pTokenPrivileges->Privileges[0].Attributes = bSet? SE_PRIVILEGE_ENABLED : 0;
-	pTokenPrivileges->Privileges[1].Luid = backupPriv;
-	pTokenPrivileges->Privileges[1].Attributes = bSet? SE_PRIVILEGE_ENABLED : 0;
-
-	if (!::AdjustTokenPrivileges(hToken, FALSE, pTokenPrivileges, 0, nullptr, nullptr))
+	[[suppress(bounds.2)]]
 	{
-		auto err = ::GetLastError();
-		cerr << "Error setting privilege values: " << err << endl;
-		return false;
+		auto buffer = std::vector<byte>(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
+		[[suppress(type.1)]] // suppress reinterpret_cast
+		{
+			TOKEN_PRIVILEGES* pTokenPrivileges = reinterpret_cast<TOKEN_PRIVILEGES*>(buffer.data());
+			pTokenPrivileges->PrivilegeCount = 2;
+			pTokenPrivileges->Privileges[0].Luid = restorePriv;
+			pTokenPrivileges->Privileges[0].Attributes = doSet ? SE_PRIVILEGE_ENABLED : 0;
+			pTokenPrivileges->Privileges[1].Luid = backupPriv;
+			pTokenPrivileges->Privileges[1].Attributes = doSet ? SE_PRIVILEGE_ENABLED : 0;
+
+			if (!::AdjustTokenPrivileges(hToken, false, pTokenPrivileges, 0, nullptr, nullptr))
+			{
+				auto err = ::GetLastError();
+				cerr << "Error setting privilege values: " << err << endl;
+				return false;
+			}
+		}
 	}
 
 	return true;
@@ -121,14 +128,18 @@ int main()
 	using RegLoadAppKeyFun = LONG(WINAPI*)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
 	auto hModule = GetModuleHandleW(L"Advapi32.dll");
 	if (!hModule) exit(1);
-	RegLoadAppKeyFun fnRegLoadAppKey = (RegLoadAppKeyFun)::GetProcAddress(hModule, "RegLoadAppKeyW");
+	RegLoadAppKeyFun fnRegLoadAppKey{ nullptr };
+	[[suppress(type.1)]] // suppress reinterpret_cast
+	{
+		fnRegLoadAppKey = reinterpret_cast<RegLoadAppKeyFun>(::GetProcAddress(hModule, "RegLoadAppKeyW"));
+	}
 	if (fnRegLoadAppKey)
 	{
 		for (auto const& profile : profiles)
 		{
 			if (profile.path.empty()) continue;
 			auto path = profile.path;
-			path.append(path.back() == L'\\' ? L"NTUSER.DAT" : L"\\NTUSER.DAT");
+			path.append(path.back() == L'\\' ? wstring(L"NTUSER.DAT") : wstring(L"\\NTUSER.DAT"));
 			if (!sys::exists(sys::path(path))) continue;
 
 			HKEY appKey;

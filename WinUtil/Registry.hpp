@@ -14,7 +14,7 @@ namespace WinUtil
 	{
 
 	public:
-		enum class Mode
+		enum class Mode : REGSAM
 		{
 			Read = KEY_READ,
 			Write = KEY_WRITE
@@ -60,7 +60,7 @@ namespace WinUtil
 			DWORD maxSubKeyLen = 0;
 			DWORD ret = ::RegQueryInfoKey(_hKey, NULL, NULL, 0, &nSubKey, &maxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL);
 			if (ret != ERROR_SUCCESS) return ret;
-			std::vector<wchar_t> buffer(maxSubKeyLen + 1, 0);
+			auto buffer = std::vector<wchar_t>(maxSubKeyLen + 1, 0);
 			DWORD index = 0;
 			DWORD keyLen = maxSubKeyLen + 1;
 			std::vector<std::wstring> values;
@@ -80,7 +80,7 @@ namespace WinUtil
 		DWORD TryReadString(std::wstring const& name, std::wstring& value)
 		{
 			if (_hKey == 0) return ERROR_INVALID_HANDLE;
-			DWORD requiredSize = 0;
+            SIZE_T requiredSize = 0;
 			auto result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, nullptr, &requiredSize);
 			if (result != ERROR_SUCCESS) return result;
 
@@ -90,7 +90,10 @@ namespace WinUtil
 			result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, pBuffer.get(), &requiredSize);
 			if (result == ERROR_SUCCESS)
 			{
-				value.assign(reinterpret_cast<wchar_t*>(pBuffer.get()));
+				[[suppress(type.1)]] // suppress reinterpret_cast
+				{
+					value.assign(reinterpret_cast<wchar_t*>(pBuffer.get()));
+				}
 			}
 
 			return result;
@@ -108,7 +111,11 @@ namespace WinUtil
 			if (_hKey == 0) return ERROR_INVALID_HANDLE;
 			DWORD resultVal = 0;
 			DWORD size = sizeof(resultVal);
-			auto result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, reinterpret_cast<BYTE*>(&resultVal), &size);
+			DWORD result{ 0 };
+			[[suppress(type.1)]] // suppress reinterpret_cast
+			{
+				result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, reinterpret_cast<BYTE*>(&resultVal), &size);
+			}
 			if (result != ERROR_SUCCESS) return result;
 
 			value = resultVal;

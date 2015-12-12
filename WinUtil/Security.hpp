@@ -13,15 +13,19 @@ namespace WinUtil
 	{
 		static DWORD SidToAccountName(std::wstring const& sidStr, std::wstring& user, std::wstring& domain)
 		{
-			_SID* unsaveSidPointer;
-			bool ret = ::ConvertStringSidToSidW(sidStr.c_str(), (PSID*)&unsaveSidPointer) != 0;
+			_SID* unsaveSidPointer{ nullptr };
+			bool ret{ false };
+			[[suppress(type.1)]] // suppress reinterpret_cast
+			{
+				ret = ::ConvertStringSidToSidW(sidStr.c_str(), reinterpret_cast<PSID*>(&unsaveSidPointer)) != 0;
+			}
 			if (!ret) return ::GetLastError();
-			
-			std::unique_ptr<_SID, HLOCAL(__stdcall *)(HLOCAL)> pSid(unsaveSidPointer, ::LocalFree);
-			SID_NAME_USE sidNameUse;
+			using DeleteFunType = HLOCAL(__stdcall*)(HLOCAL);
+			auto pSid = std::unique_ptr<_SID, DeleteFunType>(unsaveSidPointer, ::LocalFree);
+			SID_NAME_USE sidNameUse{};
 			DWORD nameBufferSize = 0;
 			DWORD domainBufferSize = 0;
-			ret = ::LookupAccountSidW(NULL, pSid.get(), NULL, &nameBufferSize, NULL, &domainBufferSize, &sidNameUse) != 0;
+			ret = ::LookupAccountSidW(nullptr, pSid.get(), nullptr, &nameBufferSize, nullptr, &domainBufferSize, &sidNameUse) != 0;
             if (!ret)
             {
                 auto errorCode = ::GetLastError();
@@ -32,9 +36,9 @@ namespace WinUtil
                 }
                 else
                 {
-                    std::vector<wchar_t> nameBuffer(nameBufferSize, 0);
-                    std::vector<wchar_t> domainBuffer(domainBufferSize, 0);
-                    ret = ::LookupAccountSidW(NULL, pSid.get(), nameBuffer.data(), &nameBufferSize, domainBuffer.data(), &domainBufferSize, &sidNameUse) != 0;
+                    auto nameBuffer = std::vector<wchar_t>(nameBufferSize, 0);
+                    auto domainBuffer = std::vector<wchar_t>(domainBufferSize, 0);
+                    ret = ::LookupAccountSidW(nullptr, pSid.get(), nameBuffer.data(), &nameBufferSize, domainBuffer.data(), &domainBufferSize, &sidNameUse) != 0;
                     if (!ret) return ::GetLastError();
 
                     user.assign(nameBuffer.data());
