@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <system_error>
 #include <filesystem>
 #include <memory>
 #include <io.h>
@@ -107,8 +106,8 @@ static vector<UninstallData> ScanUserKey(HKEY appKey, wstring const& subKey, Win
 	}
 	else
 	{
-		auto err = error_code(openResult, system_category());
-		cerr << "error: " << err.message();
+		auto err = System::SysError(openResult);
+		cerr << "error: " << err.what();
 	}
 
 	return result;
@@ -116,81 +115,98 @@ static vector<UninstallData> ScanUserKey(HKEY appKey, wstring const& subKey, Win
 
 int main()
 {
-    _setmode(_fileno(stdout), _O_U16TEXT);
-
-    SetProcRegAccessPrivs(true);
-
-	vector<UserProfile> profiles;
-	System::GetLocalProfiles(profiles);
-    wcout << L"Found " << profiles.size() << L" profiles:\n";
-    for (auto const& profile : profiles)
+    try
     {
-        wcout << profile.GetFullAccountName() << L"\n";
+        _setmode(_fileno(stdout), _O_U16TEXT);
+
+        SetProcRegAccessPrivs(true);
+
+	    vector<UserProfile> profiles = System::GetLocalProfiles();
+        wcout << L"Profiles found: " << profiles.size() << L"\n";
+        for (auto const& profile : profiles)
+        {
+            wcout << L"  " << profile.GetFullAccountName() << L"\n";
+        }
+
+	    vector<UninstallData> uninstallData;
+	    using RegLoadAppKeyFun = LONG(WINAPI*)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
+	    auto hModule = GetModuleHandleW(L"Advapi32.dll");
+	    if (!hModule) exit(1);
+	    RegLoadAppKeyFun fnRegLoadAppKey{ nullptr };
+	    [[suppress(type.1)]] // suppress reinterpret_cast
+	    {
+		    fnRegLoadAppKey = reinterpret_cast<RegLoadAppKeyFun>(::GetProcAddress(hModule, "RegLoadAppKeyW"));
+	    }
+	    if (fnRegLoadAppKey)
+	    {
+		    for (auto const& profile : profiles)
+		    {
+			    if (profile.path.empty()) continue;
+			    auto path = profile.path;
+			    path.append(path.back() == L'\\' ? wstring(L"NTUSER.DAT") : wstring(L"\\NTUSER.DAT"));
+			    if (!sys::exists(sys::path(path))) continue;
+
+			    HKEY appKey;
+			    DWORD loadResult = fnRegLoadAppKey(path.c_str(), &appKey, KEY_ALL_ACCESS, REG_PROCESS_APPKEY, 0);
+			    if (ERROR_SUCCESS == loadResult || ERROR_SHARING_VIOLATION == loadResult)
+			    {
+				    auto subKey = ERROR_SUCCESS == loadResult ? wstring(uninstallStr) : profile.sid + L"\\" + uninstallStr;
+				    if (ERROR_SHARING_VIOLATION == loadResult) appKey = HKEY_USERS;
+				    auto userData = ScanUserKey(appKey, subKey, profile);
+				    uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
+
+				    ::RegCloseKey(appKey);
+			    }
+			    else
+			    {
+				    if (ERROR_BADDB == loadResult) //ERROR_PRIVILEGE_NOT_HELD
+				    {
+					    // really load the hive
+					    loadResult = ::RegLoadKeyW(HKEY_USERS, profile.name.c_str(), path.c_str());
+					    if (loadResult == ERROR_SUCCESS)
+					    {
+						    auto subKey = "";
+						    auto userData = ScanUserKey(HKEY_USERS, profile.name + L"\\" + uninstallStr, profile);
+						    uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
+
+						    ::RegUnLoadKeyW(HKEY_USERS, profile.name.c_str());
+						    continue;
+					    }
+				    }
+				    wcerr << profile.name << L": ";
+				    auto err = System::SysError(loadResult);
+				    cerr << "error " << err.Value() << ": " << err.what();
+			    }
+		    }
+	    }
+	    else
+	    {
+		    cerr << "platform not supported" << endl;
+		    exit(ERROR_INVALID_FUNCTION);
+	    }
+
+        wcout << L"\nPrograms found: " << uninstallData.size() << L"\n";
+	    for (auto const& data : uninstallData)
+	    {
+            auto result = data.ToText();
+            wcout << L"  " << result << endl;
+	    }
+
+        return 0;
+    }
+    catch (WinUtil::System::SysError const& err)
+    {
+        cerr << err.what();
+        return err.Value();
+    }
+    catch (std::exception const& err)
+    {
+        cerr << err.what();
+    }
+    catch (...)
+    {
+        cerr << "unknown error";
     }
 
-	vector<UninstallData> uninstallData;
-	using RegLoadAppKeyFun = LONG(WINAPI*)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
-	auto hModule = GetModuleHandleW(L"Advapi32.dll");
-	if (!hModule) exit(1);
-	RegLoadAppKeyFun fnRegLoadAppKey{ nullptr };
-	[[suppress(type.1)]] // suppress reinterpret_cast
-	{
-		fnRegLoadAppKey = reinterpret_cast<RegLoadAppKeyFun>(::GetProcAddress(hModule, "RegLoadAppKeyW"));
-	}
-	if (fnRegLoadAppKey)
-	{
-		for (auto const& profile : profiles)
-		{
-			if (profile.path.empty()) continue;
-			auto path = profile.path;
-			path.append(path.back() == L'\\' ? wstring(L"NTUSER.DAT") : wstring(L"\\NTUSER.DAT"));
-			if (!sys::exists(sys::path(path))) continue;
-
-			HKEY appKey;
-			DWORD loadResult = fnRegLoadAppKey(path.c_str(), &appKey, KEY_ALL_ACCESS, REG_PROCESS_APPKEY, 0);
-			if (ERROR_SUCCESS == loadResult || ERROR_SHARING_VIOLATION == loadResult)
-			{
-				auto subKey = ERROR_SUCCESS == loadResult ? wstring(uninstallStr) : profile.sid + L"\\" + uninstallStr;
-				if (ERROR_SHARING_VIOLATION == loadResult) appKey = HKEY_USERS;
-				auto userData = ScanUserKey(appKey, subKey, profile);
-				uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
-
-				::RegCloseKey(appKey);
-			}
-			else
-			{
-				if (ERROR_BADDB == loadResult) //ERROR_PRIVILEGE_NOT_HELD
-				{
-					// really load the hive
-					loadResult = ::RegLoadKeyW(HKEY_USERS, profile.name.c_str(), path.c_str());
-					if (loadResult == ERROR_SUCCESS)
-					{
-						auto subKey = "";
-						auto userData = ScanUserKey(HKEY_USERS, profile.name + L"\\" + uninstallStr, profile);
-						uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
-
-						::RegUnLoadKeyW(HKEY_USERS, profile.name.c_str());
-						continue;
-					}
-				}
-				wcerr << profile.name << L": ";
-				auto err = error_code(loadResult, system_category());
-				cerr << "error " << err.value() << ": " << err.message();
-			}
-		}
-	}
-	else
-	{
-		cerr << "platform not supported" << endl;
-		exit(ERROR_INVALID_FUNCTION);
-	}
-
-    wcout << uninstallData.size() << L" found\n";
-	for (auto const& data : uninstallData)
-	{
-        auto result = data.ToText();
-        wcout << result << endl;
-	}
-
-	return 0;
+	return 1;
 }

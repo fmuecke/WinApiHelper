@@ -10,12 +10,26 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <stdexcept>
+#include <system_error>
 
 namespace WinUtil
 {
 	namespace System
 	{
-		static bool IsX64()
+        class SysError : public std::runtime_error 
+        {
+        public:
+            explicit SysError(DWORD code) 
+                : std::runtime_error(std::error_code(code, std::system_category()).message())
+                , _code{code}
+            {}
+            DWORD Value() const noexcept { return _code; }
+        private:
+            DWORD _code = 0;
+        };
+
+        static bool IsX64()
 		{
 			SYSTEM_INFO si = { 0 };
 			::GetNativeSystemInfo(&si);		
@@ -54,27 +68,27 @@ namespace WinUtil
 		}
 		
 		// Retrieves the account names (domain\user) for all local accounts
-		static DWORD GetLocalProfiles(std::vector<UserProfile>& values)
+        std::vector<UserProfile> GetLocalProfiles()
 		{
-			Registry reg;
+            Registry reg;
 			DWORD ret = reg.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList", Registry::Mode::Read);
-			if (ret != ERROR_SUCCESS) return ret;
-			std::vector<std::wstring> profileSids;
+            if (ret != ERROR_SUCCESS) throw SysError(ret);
+
+            std::vector<std::wstring> profileSids;
 			ret = reg.EnumKeys(profileSids);
-			if (ret != ERROR_SUCCESS) return ret;
+			if (ret != ERROR_SUCCESS) throw SysError(ret);
 			
-			std::vector<UserProfile> _accounts;
+			std::vector<UserProfile> accounts;
 			for (auto const& sidStr : profileSids)
 			{
-				UserProfile profile;
+                UserProfile profile{};
 				profile.sid = sidStr;
 				Registry::TryReadString(reg.Key(), sidStr, L"ProfileImagePath", profile.path);
 				/*DWORD ret = */Security::SidToAccountName(sidStr, profile.name, profile.domain);
-                _accounts.push_back(profile);
+                accounts.push_back(profile);
 			}
 
-			values.swap(_accounts);
-			return ERROR_SUCCESS;
+			return accounts;
 		}		
 
 		struct WindowsVersion

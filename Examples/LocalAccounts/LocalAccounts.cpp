@@ -10,17 +10,29 @@ using namespace std;
 
 int main()
 {
-	vector<WinUtil::UserProfile> accounts;
-	auto ret = WinUtil::System::GetLocalProfiles(accounts);
-	if (ret != ERROR_SUCCESS)
-	{
-		cerr << "error code: " << ret << endl;
-		exit(ret);
-	}
-	for (auto const& account : accounts)
-	{
-		wcout << account.GetFullAccountName() << endl;
-	}
-	
-	return 0;
+    try
+    {
+        auto accounts = WinUtil::System::GetLocalProfiles();
+        for (auto const& account : accounts)
+        {
+            wcout << account.GetFullAccountName() << endl;
+        }
+
+        return 0;
+    }
+    catch (WinUtil::System::SysError const& err)
+    {
+        cerr << err.what();
+        return err.Value();
+    }
+    catch (std::exception const& err)
+    {
+        cerr << err.what();
+    }
+    catch (...)
+    {
+        cerr << "unknown error"; 
+    }
+
+    return 1;
 }
