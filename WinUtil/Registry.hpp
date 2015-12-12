@@ -45,15 +45,15 @@ namespace WinUtil
 			Close();
 		}
 
-		HKEY Key() const { return _hKey; }
+		HKEY Key() const noexcept  { return _hKey; }
 
-		DWORD Open(HKEY hKey, std::wstring const& subKey, Mode mode)
+		DWORD Open(HKEY hKey, std::wstring const& subKey, Mode mode) noexcept
 		{
 			Close();
 			return ::RegOpenKeyExW(hKey, subKey.c_str(), 0, static_cast<REGSAM>(mode), &_hKey);
 		}
 		
-		DWORD EnumKeys(std::vector<std::wstring>& subKeys)
+		DWORD EnumKeys(std::vector<std::wstring>& subKeys) noexcept
 		{
 			if (_hKey == 0) return ERROR_INVALID_HANDLE; 
 			DWORD nSubKey = 0;
@@ -77,7 +77,7 @@ namespace WinUtil
 			return ERROR_SUCCESS;
 		}
 
-		DWORD TryReadString(std::wstring const& name, std::wstring& value)
+		DWORD TryReadString(std::wstring const& name, std::wstring& value) noexcept
 		{
 			if (_hKey == 0) return ERROR_INVALID_HANDLE;
             SIZE_T requiredSize = 0;
@@ -99,14 +99,14 @@ namespace WinUtil
 			return result;
 		}
 
-		static bool TryReadString(HKEY hKey, std::wstring const& subKey, std::wstring const& name, std::wstring& value)
+		static bool TryReadString(HKEY hKey, std::wstring const& subKey, std::wstring const& name, std::wstring& value) noexcept
 		{
 			Registry reg;
 			if (reg.Open(hKey, subKey, Mode::Read) != ERROR_SUCCESS) return false;
 			return reg.TryReadString(name, value) == ERROR_SUCCESS;
 		}
 
-		DWORD TryReadDword(std::wstring const& name, DWORD& value)
+		DWORD TryReadDword(std::wstring const& name, DWORD& value) noexcept
 		{
 			if (_hKey == 0) return ERROR_INVALID_HANDLE;
 			DWORD resultVal = 0;
@@ -122,7 +122,7 @@ namespace WinUtil
 			return result;
 		}
 
-		static bool TryReadDword(HKEY hKey, std::wstring const& subKey, std::wstring const& name, DWORD& value)
+		static bool TryReadDword(HKEY hKey, std::wstring const& subKey, std::wstring const& name, DWORD& value) noexcept
 		{
 			Registry reg;
 			if (reg.Open(hKey, subKey, Mode::Read) != ERROR_SUCCESS) return false;
@@ -130,7 +130,7 @@ namespace WinUtil
 		}
 	
 	private:
-		void Close()
+		void Close() noexcept
 		{
 			if (_hKey != 0)
 			{
@@ -139,7 +139,7 @@ namespace WinUtil
 			}
 		}
 	
-		HKEY _hKey = 0;
+        HKEY _hKey{ 0 };
 	};
 
 }
