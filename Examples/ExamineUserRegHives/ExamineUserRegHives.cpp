@@ -119,10 +119,14 @@ int main()
     _setmode(_fileno(stdout), _O_U16TEXT);
 
     SetProcRegAccessPrivs(true);
-	bool verbose = false;
 
 	vector<UserProfile> profiles;
 	System::GetLocalProfiles(profiles);
+    wcout << L"Found " << profiles.size() << L" profiles:\n";
+    for (auto const& profile : profiles)
+    {
+        wcout << profile.GetFullAccountName() << L"\n";
+    }
 
 	vector<UninstallData> uninstallData;
 	using RegLoadAppKeyFun = LONG(WINAPI*)(LPCTSTR, PHKEY, REGSAM, DWORD, DWORD);
@@ -149,7 +153,6 @@ int main()
 				auto subKey = ERROR_SUCCESS == loadResult ? wstring(uninstallStr) : profile.sid + L"\\" + uninstallStr;
 				if (ERROR_SHARING_VIOLATION == loadResult) appKey = HKEY_USERS;
 				auto userData = ScanUserKey(appKey, subKey, profile);
-				if (verbose) wcout << profile.GetFullAccountName() << L": " << userData.size() << L" found" << endl;
 				uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
 
 				::RegCloseKey(appKey);
@@ -164,7 +167,6 @@ int main()
 					{
 						auto subKey = "";
 						auto userData = ScanUserKey(HKEY_USERS, profile.name + L"\\" + uninstallStr, profile);
-						if (verbose) wcout << profile.GetFullAccountName() << L": " << userData.size() << L" found" << endl;
 						uninstallData.insert(cend(uninstallData), cbegin(userData), cend(userData));
 
 						::RegUnLoadKeyW(HKEY_USERS, profile.name.c_str());
