@@ -2,6 +2,7 @@
 #include <iostream>
 #include <filesystem>
 #include <regex>
+#include <array>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -18,9 +19,9 @@ wstring LastWriteTimeToLocalTime(const path& file_path)
     const auto last = chrono::system_clock::to_time_t(last_write_time(file_path));
     tm timeinfo;
     localtime_s(&timeinfo, &last);
-    wchar_t buf[56];
-    _wasctime_s(buf, 56, &timeinfo); // appends '\n'
-    return wstring{ buf };
+    array<wchar_t, 56> buf;
+    _wasctime_s(buf.data(), buf.size(), &timeinfo); // appends '\n'
+    return wstring{ buf.data() };
 }
 
 // List files and directories in the specified path

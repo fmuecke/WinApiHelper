@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="FindFiles.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
