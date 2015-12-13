@@ -49,4 +49,15 @@ namespace StdHelper
 	{
 		return Split<std::wstring>(s, delim, true);
 	}
+
+    void ReplaceAll(std::string& s, std::string const& search, std::string const& replace)
+    {
+        for (size_t pos = 0; ; pos += replace.length())
+        {
+            pos = s.find(search, pos);
+            if (pos == std::string::npos) break;
+            s.erase(pos, search.length());
+            s.insert(pos, replace);
+        }
+    }
 }
