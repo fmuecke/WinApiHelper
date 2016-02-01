@@ -15,6 +15,15 @@ using namespace WinUtil;
 
 static wchar_t const * const uninstallStr = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
 
+static string ToAnsi(const wstring& wstr)
+{
+    auto requiredLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), nullptr, 0, nullptr, nullptr);
+    string r;
+    r.resize(requiredLen, 0);
+    auto actualLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), &r[0], requiredLen, nullptr, nullptr);
+    return r;
+}
+
 struct UninstallData
 {
 	wstring userProfile{};
@@ -122,10 +131,10 @@ int main()
         SetProcRegAccessPrivs(true);
 
 	    vector<UserProfile> profiles = System::GetLocalProfiles();
-        wcout << L"Profiles found: " << profiles.size() << L"\n";
+        cout << "Profiles found: " << profiles.size() << "\n";
         for (auto const& profile : profiles)
         {
-            wcout << L"  " << profile.GetFullAccountName() << L"\n";
+            cout << L"  " << ToAnsi(profile.GetFullAccountName()) << "\n";
         }
 
 	    vector<UninstallData> uninstallData;
@@ -185,11 +194,11 @@ int main()
 		    exit(ERROR_INVALID_FUNCTION);
 	    }
 
-        wcout << L"\nPrograms found: " << uninstallData.size() << L"\n";
+        cout << "\nPrograms found: " << uninstallData.size() << "\n";
 	    for (auto const& data : uninstallData)
 	    {
-            auto result = data.ToText();
-            wcout << L"  " << result << endl;
+            auto result = ToAnsi(data.ToText());
+            cout << "  " << result << endl;
 	    }
 
         return 0;
