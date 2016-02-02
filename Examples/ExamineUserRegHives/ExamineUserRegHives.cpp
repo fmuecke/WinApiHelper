@@ -126,7 +126,7 @@ int main()
 {
     try
     {
-        _setmode(_fileno(stdout), _O_U16TEXT);
+        //_setmode(_fileno(stdout), _O_WTEXT);
 
         SetProcRegAccessPrivs(true);
 
@@ -134,7 +134,7 @@ int main()
         cout << "Profiles found: " << profiles.size() << "\n";
         for (auto const& profile : profiles)
         {
-            cout << L"  " << ToAnsi(profile.GetFullAccountName()) << "\n";
+            cout << "  " << ToAnsi(profile.GetFullAccountName()) << "\n";
         }
 
 	    vector<UninstallData> uninstallData;
@@ -182,7 +182,7 @@ int main()
 						    continue;
 					    }
 				    }
-				    wcerr << profile.name << L": ";
+				    cerr << ToAnsi(profile.name) << ": ";
 				    auto err = System::SysError(loadResult);
 				    cerr << "error " << err.Value() << ": " << err.what();
 			    }
