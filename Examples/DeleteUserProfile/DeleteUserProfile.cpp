@@ -20,6 +20,7 @@ static wstring GetSid(vector<WinUtil::UserProfile> const& profiles, wstring name
     auto pos = find_if(RANGE(profiles), [&](WinUtil::UserProfile const& p)
     {
         return StdHelper::InvariantCompare(name, p.GetFullAccountName())
+			|| StdHelper::InvariantCompare(name, p.GetFullAccountNameWithAt())
             || StdHelper::InvariantCompare(name, p.name);
     });
 
@@ -28,16 +29,21 @@ static wstring GetSid(vector<WinUtil::UserProfile> const& profiles, wstring name
 
 int wmain(int argc, wchar_t** argv)
 {
+	auto profiles = vector<WinUtil::UserProfile>();
     try
     {
         auto args = vector<wstring>(argv, argv + argc);
-        if (args.size() != 2 || args[1].find(L"@") != string::npos)
+        if (args.size() != 2)
         {
             throw runtime_error("please specifiy DOMAIN\\user");
         }
+		profiles = WinUtil::System::GetLocalProfiles();
+        auto sid = GetSid(profiles, args[1]);
+		if (sid.empty())
+		{
+			throw runtime_error("profile not found");
+		}
 
-        auto sid = GetSid(WinUtil::System::GetLocalProfiles(), args[1]);
-        if (sid.empty()) throw runtime_error("profile not found");
         auto ret = ::DeleteProfileW(sid.c_str(), nullptr, nullptr);
         if (ret)
         {
@@ -46,14 +52,22 @@ int wmain(int argc, wchar_t** argv)
         else
         {
             auto code = ::GetLastError();
+			
             throw error_code(code, system_category());
         }
     }
     catch (runtime_error& e)
     {
         cerr << "(c) baramundi software AG 2016" << endl;
-        cerr << "Usage: DeleteUserProfile.exe user@domain" << endl;
+        cerr << "Usage: DeleteUserProfile.exe user" << endl;
         cerr << "\nerror: " << e.what() << endl;
+
+		cerr << "\nValid profiles are: \n\n";
+		for (auto const& p : profiles)
+		{
+			wcerr << "\t" << p.GetFullAccountNameWithAt() << endl;
+		}
+
         return 1;
     }
     catch (error_code& e)

@@ -15,5 +15,11 @@ namespace WinUtil
 		{
 			return domain.empty() ? name : domain + L"\\" + name;
 		}
+
+		std::wstring GetFullAccountNameWithAt() const
+		{
+			return domain.empty() ? name : name + L"@" + domain;
+		}
+
 	};
 }
