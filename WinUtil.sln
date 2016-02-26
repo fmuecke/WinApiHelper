@@ -33,7 +33,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindFiles", "Examples\FindF
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WildcardMatch", "WildcardMatch\WildcardMatch.vcxproj", "{D38799F2-AE17-4683-9AC2-488A024F7741}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AllFixedDrives", "Examples\AllFixedDrives\AllFixedDrives.vcxproj", "{82B400F5-91FD-4795-8EF1-D6BE485A9531}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DriveTypes", "Examples\AllFixedDrives\AllFixedDrives.vcxproj", "{82B400F5-91FD-4795-8EF1-D6BE485A9531}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeleteUserProfile", "Examples\DeleteUserProfile\DeleteUserProfile.vcxproj", "{1CC21952-453A-445E-B3C5-8344C53F0E9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +109,14 @@ Global
 		{82B400F5-91FD-4795-8EF1-D6BE485A9531}.Release|Win32.Build.0 = Release|Win32
 		{82B400F5-91FD-4795-8EF1-D6BE485A9531}.Release|x64.ActiveCfg = Release|x64
 		{82B400F5-91FD-4795-8EF1-D6BE485A9531}.Release|x64.Build.0 = Release|x64
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Debug|Win32.Build.0 = Debug|Win32
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Debug|x64.ActiveCfg = Debug|x64
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Debug|x64.Build.0 = Debug|x64
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|Win32.ActiveCfg = Release|Win32
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|Win32.Build.0 = Release|Win32
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|x64.ActiveCfg = Release|x64
+		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

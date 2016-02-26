@@ -50,7 +50,7 @@ namespace StdHelper
 		return Split<std::wstring>(s, delim, true);
 	}
 
-    void ReplaceAll(std::string& s, std::string const& search, std::string const& replace)
+    static void ReplaceAll(std::string& s, std::string const& search, std::string const& replace)
     {
         for (size_t pos = 0; ; pos += replace.length())
         {
@@ -59,5 +59,10 @@ namespace StdHelper
             s.erase(pos, search.length());
             s.insert(pos, replace);
         }
+    }
+
+    static bool InvariantCompare(const std::wstring& lhs, const std::wstring& rhs)
+    {
+        return ::CompareStringEx(LOCALE_NAME_INVARIANT, NORM_IGNORECASE, lhs.c_str(), lhs.size(), rhs.c_str(), rhs.size(), nullptr, nullptr, 0) == CSTR_EQUAL;
     }
 }
