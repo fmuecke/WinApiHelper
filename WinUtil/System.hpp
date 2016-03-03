@@ -36,7 +36,7 @@ namespace WinUtil
 			return si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 		}
 
-		bool IsWow64()
+		static bool IsWow64()
 		{
 			auto hModule = ::GetModuleHandleW(L"kernel32.dll");
 			if (!hModule) return false;

@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinUtil", "WinUtil", "{1F98
 		WinUtil\Registry.hpp = WinUtil\Registry.hpp
 		WinUtil\Security.hpp = WinUtil\Security.hpp
 		WinUtil\System.hpp = WinUtil\System.hpp
+		WinUtil\System.IO.hpp = WinUtil\System.IO.hpp
 		WinUtil\UserProfile.hpp = WinUtil\UserProfile.hpp
 	EndProjectSection
 EndProject
@@ -36,6 +37,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DriveTypes", "Examples\AllFixedDrives\AllFixedDrives.vcxproj", "{82B400F5-91FD-4795-8EF1-D6BE485A9531}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeleteUserProfile", "Examples\DeleteUserProfile\DeleteUserProfile.vcxproj", "{1CC21952-453A-445E-B3C5-8344C53F0E9D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IOTest", "IOTest\IOTest.vcxproj", "{F2764C7A-62BB-4DFB-BAC3-9257DA267739}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +120,14 @@ Global
 		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|Win32.Build.0 = Release|Win32
 		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|x64.ActiveCfg = Release|x64
 		{1CC21952-453A-445E-B3C5-8344C53F0E9D}.Release|x64.Build.0 = Release|x64
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Debug|Win32.Build.0 = Debug|Win32
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Debug|x64.ActiveCfg = Debug|x64
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Debug|x64.Build.0 = Debug|x64
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|Win32.ActiveCfg = Release|Win32
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|Win32.Build.0 = Release|Win32
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|x64.ActiveCfg = Release|x64
+		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
