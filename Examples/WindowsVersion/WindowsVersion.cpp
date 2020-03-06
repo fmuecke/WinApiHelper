@@ -17,6 +17,16 @@ int main()
 	winVer.Init();
 
 	wcout << winVer.ToExtendedString() << endl;
+    if (!winVer.ReleaseId.empty()) 
+    {
+        wcout << L"Release: " << winVer.ReleaseId << endl;
+    }
+
+    if (winVer.UBR)
+    {
+        wcout << L"OS Build: " << winVer.CurrentBuildNumber << L"." << winVer.UBR << endl;
+    }
+
     wcout << L"Default system language: " << System::GetDefaultLocaleName() << endl;
     
     std::wstring locale;

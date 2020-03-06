@@ -102,6 +102,8 @@ namespace WinUtil
 			std::wstring ProductName{};
 			std::wstring Architecture{};
 			std::wstring Language{};
+			std::wstring ReleaseId{};
+			DWORD UBR = 0;
 			DWORD CurrentMajorVersionNumber = 0;
 			DWORD CurrentMinorVersionNumber = 0;
 
@@ -135,6 +137,8 @@ namespace WinUtil
 				reg.TryReadString(L"CurrentBuildNumber", CurrentBuildNumber);
 				reg.TryReadDword(L"CurrentMajorVersionNumber", CurrentMajorVersionNumber);
 				reg.TryReadDword(L"CurrentMinorVersionNumber", CurrentMinorVersionNumber);	
+				reg.TryReadDword(L"UBR", UBR);
+				reg.TryReadString(L"ReleaseId", ReleaseId);
                 reg.TryReadString(L"CSDbuildNumber", CSDBuildNumber);
                 reg.TryReadString(L"CSDVersion", ServicePack);
                 auto pos = ServicePack.find_last_not_of(L"Service Pack ");
