@@ -8,9 +8,9 @@
 #include <fcntl.h>
 #include "../../WinUtil/System.hpp"
 #include "../../WinUtil/Security.hpp"
+#include <windows.h>
 
 using namespace std;
-using namespace std::tr2;
 using namespace WinUtil;
 
 static wchar_t const * const uninstallStr = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
@@ -69,7 +69,7 @@ static bool SetProcRegAccessPrivs(bool doSet)
 	// create buffer with enough space for token privileges and an additional LUID with attributes
 	[[suppress(bounds.2)]]
 	{
-		auto buffer = std::vector<byte>(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
+		auto buffer = std::vector<unsigned char>(sizeof(TOKEN_PRIVILEGES) + sizeof(LUID_AND_ATTRIBUTES), 0);
 		[[suppress(type.1)]] // suppress reinterpret_cast
 		{
 			TOKEN_PRIVILEGES* pTokenPrivileges = reinterpret_cast<TOKEN_PRIVILEGES*>(buffer.data());
@@ -153,7 +153,7 @@ int main()
 			    if (profile.path.empty()) continue;
 			    auto path = profile.path;
 			    path.append(path.back() == L'\\' ? wstring(L"NTUSER.DAT") : wstring(L"\\NTUSER.DAT"));
-			    if (!sys::exists(sys::path(path))) continue;
+			    if (!filesystem::exists(filesystem::path(path))) continue;
 
 			    HKEY appKey;
 			    DWORD loadResult = fnRegLoadAppKey(path.c_str(), &appKey, KEY_ALL_ACCESS, REG_PROCESS_APPKEY, 0);
