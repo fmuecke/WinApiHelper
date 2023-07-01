@@ -16,43 +16,8 @@ namespace WinUtil
 {
 	namespace System
 	{
-        class SystemUUID 
+        namespace SystemUUID 
         {
-        public:
-            SystemUUID()
-            {
-            }
-
-			SystemUUID(std::array<BYTE, 16> rawUuid) : _uuid(rawUuid)
-			{}
-
-			//SystemUUID(const char* uuidStr, uint8_t len)
-			//{
-                //if (len != 37)
-            //}
-
-            bool Init() 
-            {
-                return retrieve_from_system(_uuid);
-            }
-
-            std::string ToString() const 
-			{ 
-				return raw_uuid_to_string(_uuid);
-			}
-
-			std::array<BYTE, 16> GetRaw() const
-			{
-				return _uuid;
-			}
-
-            static std::string RetriveAsString()
-            {
-                SystemUUID uuid{};
-                uuid.Init();
-                return uuid.ToString();
-            }
-
             static bool is_valid_uuid(const BYTE* pUuid, size_t len)
 			{
 				// If the value is all FFh, the ID is not currently present in the system, but it can be set. 
@@ -68,7 +33,7 @@ namespace WinUtil
 
 			static std::string raw_uuid_to_string(const std::array<BYTE, 16>& uuid)
 			{
-				// The UUID {00112233-4455-6677-8899-AABBCCDDEEFF} would thus be represented as: 
+				// The UUID {00112233-4455-6677-8899-AABBCCDDEEFF} is represented as: 
 				// 33 22 11 00 55 44 77 66 88 99 AA BB CC DD EE FF. 
 				// see https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.3.0.pdf section 7.2.1
 
@@ -79,6 +44,42 @@ namespace WinUtil
 
 				return uuidString;
 			}
+
+            static std::array<BYTE, 16> string_to_raw_uuid(std::string uuidStr)
+            {
+                std::array<BYTE, 16> byteArray{};
+                if (uuidStr.length() == 36 && 4 == std::count(uuidStr.begin(), uuidStr.end(), '-'))
+                {
+                    // remove separator chars
+                    uuidStr.erase(std::remove(uuidStr.begin(), uuidStr.end(), '-'), uuidStr.end());
+
+                    auto _hexCharToByte = [](char c)
+                    {
+                        return
+                            (c >= '0' && c <= '9') ? static_cast<unsigned char>(c - '0') :
+                            (c >= 'a' && c <= 'f') ? static_cast<unsigned char>(c - 'a' + 10) :
+                            (c >= 'A' && c <= 'F') ? static_cast<unsigned char>(c - 'A' + 10) : 0;
+                    };
+
+                    // The UUID {00112233-4455-6677-8899-AABBCCDDEEFF} needs to be represented as: 
+                    // 33 22 11 00 55 44 77 66 88 99 AA BB CC DD EE FF. 
+                    byteArray[0] = (_hexCharToByte(uuidStr[ 6]) << 4) | _hexCharToByte(uuidStr[7]);
+                    byteArray[1] = (_hexCharToByte(uuidStr[ 4]) << 4) | _hexCharToByte(uuidStr[5]);
+                    byteArray[2] = (_hexCharToByte(uuidStr[ 2]) << 4) | _hexCharToByte(uuidStr[3]);
+                    byteArray[3] = (_hexCharToByte(uuidStr[ 0]) << 4) | _hexCharToByte(uuidStr[1]);
+                    byteArray[4] = (_hexCharToByte(uuidStr[10]) << 4) | _hexCharToByte(uuidStr[11]);
+                    byteArray[5] = (_hexCharToByte(uuidStr[ 8]) << 4) | _hexCharToByte(uuidStr[9]);
+                    byteArray[6] = (_hexCharToByte(uuidStr[14]) << 4) | _hexCharToByte(uuidStr[15]);
+                    byteArray[7] = (_hexCharToByte(uuidStr[12]) << 4) | _hexCharToByte(uuidStr[13]);
+                    
+                    for (std::size_t i = 16; i < uuidStr.size(); i += 2) {
+                        BYTE byte = (_hexCharToByte(uuidStr[i]) << 4) | _hexCharToByte(uuidStr[i + 1]);
+                        byteArray[i / 2] = byte;
+                    }
+                }
+
+                return byteArray;
+            }
 
             static bool retrieve_from_system(std::array<BYTE, 16>& uuid)
             {
@@ -159,9 +160,12 @@ namespace WinUtil
                 return false;
             }
 
-        private:
-			std::array<BYTE, 16> _uuid{};
-        };
-
+            static std::string GetAsString()
+            {
+                std::array<BYTE, 16> uuid{};
+                if (!retrieve_from_system(uuid)) return "";
+                return raw_uuid_to_string(uuid);
+            }
+        }
 	}
 }

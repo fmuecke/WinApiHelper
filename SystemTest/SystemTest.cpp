@@ -45,15 +45,21 @@ namespace SystemTest
 			Assert::IsTrue(sys::SystemUUID::is_valid_uuid(uuid.data(), uuid.size()));
 		}
 
-		TEST_METHOD(raw_initialization)
-		{
-			sys::SystemUUID id{ uuid };
-			Assert::IsTrue(equal(uuid.begin(), uuid.end(), id.GetRaw().begin()));
-		}
-
-		TEST_METHOD(toString_knows_byte_orders)
+		TEST_METHOD(toString_respects_byte_orders)
 		{
 			Assert::AreEqual(string("00112233-4455-6677-8899-AABBCCDDEEFF"), sys::SystemUUID::raw_uuid_to_string(uuid));
+		}
+
+		TEST_METHOD(fromString_respects_byte_orders)
+		{
+			auto id = sys::SystemUUID::string_to_raw_uuid("00112233-4455-6677-8899-AABBCCDDEEFF");
+			Assert::IsTrue(equal(uuid.begin(), uuid.end(), id.begin()));
+		}
+
+		TEST_METHOD(fromString_supports_lower_case_uuids)
+		{
+			auto id = sys::SystemUUID::string_to_raw_uuid("00112233-4455-6677-8899-aabbccddeeff");
+			Assert::IsTrue(equal(uuid.begin(), uuid.end(), id.begin()));
 		}
 
 		TEST_METHOD(retrive_returns_same_as_wmi_call)

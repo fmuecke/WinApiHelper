@@ -8,7 +8,7 @@
 #include "../../WinUtil/SystemUUID.hpp"
 
 int main() {
-    auto uuid = WinUtil::System::SystemUUID::RetriveAsString();
+    auto uuid = WinUtil::System::SystemUUID::GetAsString();
     std::cout << "the system UUID is " << uuid << std::endl << std::endl;
     std::cout << "retrieved via WMI:" << std::endl;
     system("wmic csproduct get uuid");
