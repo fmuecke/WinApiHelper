@@ -4,6 +4,7 @@
 // - https://uefi.org/htmlspecs/ACPI_Spec_6_4_html/19_ASL_Reference/ACPI_Source_Language_Reference.html
 // - https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.3.0.pdf
 //
+// returns the same as "wmic csproduct get uuid"
 #pragma once
 
 #include <Windows.h>
@@ -52,7 +53,6 @@ namespace WinUtil
                 return uuid.ToString();
             }
 
-		private:
             static bool is_valid_uuid(const BYTE* pUuid, size_t len)
 			{
 				// If the value is all FFh, the ID is not currently present in the system, but it can be set. 
@@ -60,8 +60,8 @@ namespace WinUtil
 				// see section 7.2.1
 
 				if (len != 16) return false;
-				const auto isAllZero = std::all_of(pUuid, pUuid + 16, [](DWORD i) { return i == 0x00000000; });
-				const auto isAllFF = std::all_of(pUuid, pUuid + 16, [](DWORD i) { return i == 0xFFFFFFFF; });
+				const auto isAllZero = std::all_of(pUuid, pUuid + 16, [](BYTE i) { return i == 0x00; });
+				const auto isAllFF = std::all_of(pUuid, pUuid + 16, [](BYTE i) { return i == 0xFF; });
 
 				return !isAllZero && !isAllFF;
 			}
@@ -159,6 +159,7 @@ namespace WinUtil
                 return false;
             }
 
+        private:
 			std::array<BYTE, 16> _uuid{};
         };
 
