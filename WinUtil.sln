@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LocalAccounts", "Examples\LocalAccounts\LocalAccounts.vcxproj", "{39EF4FE4-4835-4F57-B045-163A807C598B}"
 EndProject
@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinUtil", "WinUtil", "{1F98
 		WinUtil\Locale.hpp = WinUtil\Locale.hpp
 		WinUtil\Registry.hpp = WinUtil\Registry.hpp
 		WinUtil\Security.hpp = WinUtil\Security.hpp
-		WinUtil\System.hpp = WinUtil\System.hpp
 		WinUtil\System.IO.hpp = WinUtil\System.IO.hpp
 		WinUtil\UserProfile.hpp = WinUtil\UserProfile.hpp
+		WinUtil\SystemUUID.hpp = WinUtil\SystemUUID.hpp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsVersion", "Examples\WindowsVersion\WindowsVersion.vcxproj", "{3C8399DD-F059-4DCB-AD74-5D63F1AE8880}"
@@ -39,6 +39,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeleteUserProfile", "Examples\DeleteUserProfile\DeleteUserProfile.vcxproj", "{1CC21952-453A-445E-B3C5-8344C53F0E9D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IOTest", "IOTest\IOTest.vcxproj", "{F2764C7A-62BB-4DFB-BAC3-9257DA267739}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetSystemUUID", "Examples\GetSystemUUID\GetSystemUUID.vcxproj", "{8E8E89C7-3908-461E-B59A-A2205A32443A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -128,8 +130,19 @@ Global
 		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|Win32.Build.0 = Release|Win32
 		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|x64.ActiveCfg = Release|x64
 		{F2764C7A-62BB-4DFB-BAC3-9257DA267739}.Release|x64.Build.0 = Release|x64
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Debug|Win32.Build.0 = Debug|Win32
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Debug|x64.ActiveCfg = Debug|x64
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Debug|x64.Build.0 = Debug|x64
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Release|Win32.ActiveCfg = Release|Win32
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Release|Win32.Build.0 = Release|Win32
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Release|x64.ActiveCfg = Release|x64
+		{8E8E89C7-3908-461E-B59A-A2205A32443A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {11DEF8BC-D032-403C-81D2-FEDF2CBEE76F}
 	EndGlobalSection
 EndGlobal
