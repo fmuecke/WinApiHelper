@@ -14,7 +14,7 @@ static vector<string> GetLocicalDrives()
     ::GetLogicalDriveStringsA(size, buffer.get());
     auto drives = vector<string>();
     string current;
-    for (auto i = 0; i < size; ++i)
+    for (DWORD i = 0; i < size; ++i)
     {
         if (buffer[i])
         {

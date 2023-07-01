@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <regex>
 
 namespace WinUtil
@@ -39,7 +39,7 @@ namespace WinUtil
 
             static std::vector<std::string> FindFiles(std::string path, SearchOption option, std::function<bool(std::string)> matches)
             {
-                namespace fs = std::tr2::sys;
+                namespace fs = std::filesystem;
 
                 auto result = std::vector<std::string>();
                 if (path.empty()) return result;
