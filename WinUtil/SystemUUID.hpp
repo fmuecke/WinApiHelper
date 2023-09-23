@@ -16,7 +16,7 @@ namespace WinUtil
 {
 	namespace System
 	{
-        namespace SystemUUID 
+        namespace SystemUUID
         {
             static bool is_valid_uuid(const BYTE* pUuid, size_t len)
 			{
@@ -35,7 +35,7 @@ namespace WinUtil
 			{
 				// The UUID {00112233-4455-6677-8899-AABBCCDDEEFF} is represented as: 
 				// 33 22 11 00 55 44 77 66 88 99 AA BB CC DD EE FF. 
-				// see https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.3.0.pdf section 7.2.1
+				// see https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf section 7.2.1
 
 				char uuidString[37];
 				snprintf(uuidString, sizeof(uuidString), "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
@@ -83,30 +83,14 @@ namespace WinUtil
 
             static bool retrieve_from_system(std::array<BYTE, 16>& uuid)
             {
-                // determine the required buffer size
+                // determine the required buffer size and allocate buffer
                 auto size = ::GetSystemFirmwareTable('RSMB', 0, nullptr, 0);
-
-                // allocate the buffer and retrieve the SMBIOS data
                 std::vector<BYTE> biosData(size, 0x00);
-                if (!::GetSystemFirmwareTable('RSMB', 0, biosData.data(), biosData.size()))
+                if (!::GetSystemFirmwareTable('RSMB', 0, biosData.data(), static_cast<DWORD>(biosData.size())))
                 {
                     ::OutputDebugStringA("Failed to retrieve SMBIOS data.");
                     return false;
                 }
-
-                const auto system_information_structure_size = 0x19; //TODO FM: 0x1A istead of 0x19??
-                const auto uuid_offset = 0x08;
-                const auto uuid_length = 0x10;
-
-                // header of the SMBIOS header according to section 6.1.2 in System Management BIOS (SMBIOS) Reference
-                // https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.3.0.pdf
-#pragma pack(push, 1)
-                struct SMBIOSHeader {
-                    BYTE type;
-                    BYTE length;
-                    WORD handle;
-                };
-#pragma pack(pop)
 
 #pragma warning(push)
 #pragma warning(disable : 4200) // MS extension empty array
@@ -124,19 +108,26 @@ namespace WinUtil
 
                 // Go through BIOS structures
                 auto pBiosData = reinterpret_cast<const RawSMBIOSData*>(biosData.data());
-                while (pBiosData->SMBIOSTableData < pBiosData->SMBIOSTableData + pBiosData->Length)
+                auto pTableData = pBiosData->SMBIOSTableData;
+                auto const pBiosDataEnd = pBiosData->SMBIOSTableData + pBiosData->Length;
+                while (pTableData < pBiosDataEnd -1)
                 {
-                    const BYTE* pNext{ nullptr };
-                    auto header = reinterpret_cast<const SMBIOSHeader*>(pBiosData);
+                    // header of the SMBIOS structure according to section 6.1.2 in System Management BIOS (SMBIOS) Reference
+                    // https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.7.0.pdf
+                    auto const strucType = pTableData[0];
+                    auto const strucLen = pTableData[1];
 
                     // Check if it's the System Information structure (type 1) and has a UUID (see section 7.2)
-                    if (header->type == 0x01 && header->length >= system_information_structure_size)
+                    const auto system_information_structure_size = 0x1A;
+                    if (strucType == 0x01 && strucLen >= system_information_structure_size)
                     {
-                        const BYTE* pUuid = reinterpret_cast<const BYTE*>(pBiosData) + uuid_offset;
+                        const auto uuid_offset = 0x08;
+                        const BYTE* pUuid = pTableData + uuid_offset;
 
+                        const auto uuid_length = 16;
                         if (is_valid_uuid(pUuid, uuid_length))
                         {
-                            std::copy_n(pUuid, 16, uuid.data());
+                            std::copy_n(pUuid, uuid_length, uuid.data());
                             return true;
                         }
                         break;
@@ -145,15 +136,13 @@ namespace WinUtil
                     // Move to the next SMBIOS structure...
 
                     // skip header
-                    pNext = reinterpret_cast<const BYTE*>(pBiosData) + header->length;
+                    pTableData += strucLen;
 
-                    // skip data part (end marked by 0x00,0x00)
-                    while (pNext < pBiosData->SMBIOSTableData + pBiosData->Length && (*pNext != 0 || *(pNext + 1) != 0)) ++pNext;
+                    // skip data (end marked by 0x00,0x00)
+                    while (pTableData < pBiosDataEnd -1 && (pTableData[0] != 0 || pTableData[1] != 0)) ++pTableData;
 
                     // skip end mark
-                    pNext += 2;
-
-                    pBiosData = reinterpret_cast<const RawSMBIOSData*>(pNext);
+                    pTableData += 2;
                 }
 
                 ::OutputDebugStringA("System UUID not found.");
