@@ -80,7 +80,7 @@ namespace WinUtil
 		DWORD TryReadString(std::wstring const& name, std::wstring& value) noexcept
 		{
 			if (_hKey == 0) return ERROR_INVALID_HANDLE;
-            SIZE_T requiredSize = 0;
+            DWORD requiredSize = 0;
 			auto result = ::RegQueryValueExW(_hKey, name.c_str(), 0, nullptr, nullptr, &requiredSize);
 			if (result != ERROR_SUCCESS) return result;
 

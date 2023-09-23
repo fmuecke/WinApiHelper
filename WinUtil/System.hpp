@@ -175,7 +175,7 @@ namespace WinUtil
 			auto szFileSystemName = std::array<wchar_t, MAX_PATH + 1>{ 0 };
 			auto const& pVolume = volume.empty() ? nullptr : volume.c_str();
 
-			if (::GetVolumeInformationW(pVolume, nullptr, 0, nullptr, nullptr, nullptr, szFileSystemName.data(), szFileSystemName.size()))
+			if (::GetVolumeInformationW(pVolume, nullptr, 0, nullptr, nullptr, nullptr, szFileSystemName.data(), static_cast<DWORD>(szFileSystemName.size())))
 			{
 				return std::wstring(szFileSystemName.data());
 			}

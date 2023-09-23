@@ -64,6 +64,9 @@ namespace StdHelper
 
     static bool InvariantCompare(const std::wstring& lhs, const std::wstring& rhs)
     {
-        return ::CompareStringEx(LOCALE_NAME_INVARIANT, NORM_IGNORECASE, lhs.c_str(), lhs.size(), rhs.c_str(), rhs.size(), nullptr, nullptr, 0) == CSTR_EQUAL;
+        return ::CompareStringEx(LOCALE_NAME_INVARIANT, NORM_IGNORECASE, 
+			lhs.c_str(), static_cast<DWORD>(lhs.size()), 
+			rhs.c_str(), static_cast<DWORD>(rhs.size()), 
+			nullptr, nullptr, 0) == CSTR_EQUAL;
     }
 }

@@ -17,10 +17,10 @@ static wchar_t const * const uninstallStr = L"SOFTWARE\\Microsoft\\Windows\\Curr
 
 static string ToAnsi(const wstring& wstr)
 {
-    auto requiredLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), nullptr, 0, nullptr, nullptr);
+    auto requiredLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), static_cast<DWORD>(wstr.size()), nullptr, 0, nullptr, nullptr);
     string r;
     r.resize(requiredLen, 0);
-    auto actualLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), &r[0], requiredLen, nullptr, nullptr);
+    auto actualLen = ::WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), static_cast<DWORD>(wstr.size()), &r[0], requiredLen, nullptr, nullptr);
     return r;
 }
 
